@@ -1,0 +1,3 @@
+R := inputfromfile(../../../input/sales1.txt)
+N := inputfromfile(../../../input/sales2.txt)
+showtables()

@@ -1,0 +1,50 @@
+hash search costs: 11901330 nanoseconds.
+
+hash search costs: 34821 nanoseconds.
+
+hash search costs: 20964 nanoseconds.
+
+hash search costs: 20584 nanoseconds.
+
+hash search costs: 23217 nanoseconds.
+
+hash search costs: 19444 nanoseconds.
+
+hash search costs: 2517685 nanoseconds.
+
+hash insert costs: 11164424 nanoseconds.
+
+hash insert costs: 42452 nanoseconds.
+
+hash insert costs: 34195 nanoseconds.
+
+hash insert costs: 32575 nanoseconds.
+
+hash insert costs: 33328 nanoseconds.
+
+hash insert costs: 302948 nanoseconds.
+
+hash search costs: 22750 nanoseconds.
+
+hash search costs: 27396 nanoseconds.
+
+hash search costs: 13638 nanoseconds.
+
+hash search costs: 12612 nanoseconds.
+
+hash search costs: 12105 nanoseconds.
+
+hash delete costs: 193081 nanoseconds.
+
+hash delete costs: 27049 nanoseconds.
+
+hash delete costs: 21052 nanoseconds.
+
+hash delete costs: 19362 nanoseconds.
+
+hash delete costs: 20694 nanoseconds.
+
+
+=========================================
+TOTAL TIME ELAPSED: 58573573 nanoseconds
+=========================================
