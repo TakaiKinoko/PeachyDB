@@ -1,6 +1,7 @@
 package db;
 
-import index.IIndex;
+//import index.IIndex;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,12 +18,23 @@ public class Database {
     private Map<String, Table> tables;  // name table pair
     //private String[] names;         // keep track of the names of tables
     //private String currentTable;   // keep track of the current table being accessed.
+    private Map<String, Variable> variables;  // store results of e.g. avg, count...
 
     public Database(){
         /**
          * constructor
          * */
         tables = new HashMap<>();
+        variables = new HashMap<>();
+    }
+
+    public boolean newVariable(Variable var){
+        try {
+            variables.put(var.name, var);
+            return true;
+        }catch(Exception e){
+            return false;
+        }
     }
 
     public boolean newTable(String name){
@@ -45,13 +57,155 @@ public class Database {
         return tables.get(table).insertData(entry);
     }
 
+    public boolean projectTable(String from_table, String to_table, String[] cols){
+        /**
+         * project the columns in @params cols from @from_table to @to_table
+         *
+         * schema of to_table should have already been set up when this function is called
+         *
+         * */
+
+        Table toTable = getTable(to_table);
+        Table fromTable = getTable(from_table);
+        Map<String, Integer> toSchema = toTable.getSchema();
+        Map<String, Integer> fromSchema = fromTable.getSchema();
+
+        int toCol;
+        int fromCol;
+
+        // mark to_table as derivative
+        toTable.isDerivative();
+
+        // copy index column from fromTable to toTable
+        toTable.getData().remove(0);
+        toTable.getData().add(0, fromTable.getData().get(0));
+
+        try{
+            for(String col: cols){
+                toCol = toSchema.get(col);
+                fromCol = fromSchema.get(col);
+
+                toTable.getData().remove(toCol);
+                toTable.getData().add(toCol, fromTable.getData().get(fromCol));
+            }
+            return true;
+        }catch(Exception e){
+            System.out.println("Error projecting columns to a new table.");
+            return false;
+        }
+    }
+
+    public boolean concatTables(String table1, String table2, String target){
+        assert sameSchema(table1, table2);
+
+        try {
+            ArrayList<ArrayList> t1 = getTable(table1).getData();
+            ArrayList<ArrayList> t2 = getTable(table2).getData();
+
+            // create new table
+            newTable(target);
+            // schema -- copy table1's schema to target table
+            copySchema(table1, target);
+            // add all data of t2 to the back of t1, NOT including index column
+            for (int i = 1; i < t1.size(); i++) {
+                ArrayList newCol = new ArrayList(t1.get(i));
+                newCol.addAll(t2.get(i));
+                getTable(target).addColumn(newCol);
+            }
+            // update index of the target table
+            ArrayList index = new ArrayList();
+            for (int i = 0; i < t1.get(0).size() + t2.get(0).size(); i++)
+                index.add(i);
+            getTable(target).updateColumn(0, index);
+        }catch(Exception e){
+            System.out.println("Error while concatenating tables.");
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean copySubset(String from_table, String to_table, List<Integer> subset){
+        /**
+         * copy the subset of a table to another table
+         *
+         * @param from_table: table to copy data from
+         * @param to_table: target table
+         * @param subset: indices of the items of from_table to be copied to to_table
+         * */
+        // mark to_table as derivative
+        getTable(to_table).isDerivative();
+
+        // data columns of to_table is already set up when setup schema before
+        ArrayList<ArrayList> from = getTable(from_table).getData();
+        //System.out.println("FROM TABLE: " + from_table + " column: " + from.size());
+        ArrayList<ArrayList> to = getTable(to_table).getData();
+        //System.out.println("TO TABLE: " + to_table + " column: " + to.size());
+        int col_num = from.size(), i = 0;  // number of columns
+
+        try{
+        // iterate over items
+            for(Integer j: subset){
+                StringBuilder entry = new StringBuilder();
+                entry.append(i + ": ");
+                // iterate over columns
+                to.get(0).add(i); // index (reordered from 0)
+                for(int k = 1; k < col_num; k++){
+                    to.get(k).add(from.get(k).get(j));
+                    entry.append(from.get(k).get(j));
+                }
+                i++;
+                //System.out.println(entry.toString());
+            }
+            return true;
+        }catch(Exception e) {
+            return false;
+        }
+    }
+
+    private boolean sameSchema(String table1, String table2){
+        Map<String, Integer> s1;
+        Map<String, Integer> s2;
+        try{
+            s1 = getTable(table1).getSchema();
+            s2 = getTable(table2).getSchema();
+        }catch(Exception e){
+            System.out.println("Couldn't locate the two tables or their schemas.");
+            return false;
+        }
+
+        // prove that s1's schema is necessarily the subset of s2's schema
+        for(String k: s1.keySet()){
+            if(!s2.keySet().contains(k))
+                return false;
+        }
+
+        // prove that s1 and s2 has the same schema size
+        return s1.keySet().size() == s2.keySet().size();
+    }
+
+    public boolean copySchema(String from_table, String to_table){
+        try {
+            Map<String, Integer> copy = new HashMap<>();
+            Map<String, Integer> origin = getTable(from_table).getSchema();
+            for (String col : origin.keySet()) {
+                copy.put(col, origin.get(col));
+            }
+            return getTable(to_table).updateSchema(copy);
+        }catch(Exception e){
+            System.out.println("Exception while creating schema for the new table.");
+            return false;
+        }
+    }
+
     public boolean setSchema(String[] cols, String table) {
         /**
          * @param cols: array of column names read from the input data file
          * @param table: name of the table to operate on
          * @return: true if no error, false otherwise
          * */
-        return tables.get(table).setSchema(cols);
+        //System.out.println("In Database.java, setSchema");
+        return getTable(table).setSchema(cols);
     }
 
     public Map<String, Integer> getSchema(String table){
@@ -63,6 +217,12 @@ public class Database {
 
     public Table getTable(String name){
         return tables.get(name);
+        /*
+        for(String t: tables.keySet()){
+            if(t.equals(name))
+                return tables.get(t);
+        }
+        return null; */
     }
 
     public boolean addTable(Table table){
@@ -94,7 +254,7 @@ public class Database {
         int[] tmp;
         int padding = 2;
         for(String name: tables.keySet()){
-            tmp = tables.get(name).prettyPrintLen();
+            tmp = tables.get(name).prettyPrintNameLen();
             maxName = maxName < tmp[0]? tmp[0] : maxName;
             maxSize = maxSize < tmp[1]? tmp[1] : maxSize;
         }
@@ -113,7 +273,7 @@ public class Database {
         System.out.println(boundary + "\n" + header + "\n" + boundary);
 
         for(String name: tables.keySet()) {
-            int size = tables.get(name).getData().size();
+            int size = tables.get(name).size();
             System.out.println(PrettyPrinter.getBox(name, maxName, "|")
                     + PrettyPrinter.getBox(String.valueOf(size), maxSize, "|") + "|");
         }
@@ -125,5 +285,36 @@ public class Database {
     public List<IIndex> getIndices() {
         return indices;
     }*/
+
+    public void showSchema(){
+        int maxName = "Table".length(), maxSize = "Schema".length();
+        int[] tmp;
+        int sch_len;
+        int padding = 2;
+        for(String name: tables.keySet()){
+            tmp = tables.get(name).prettyPrintNameLen();
+            sch_len = tables.get(name).prettyPrintSchemaLen();
+            maxName = maxName < tmp[0]? tmp[0] : maxName;
+            maxSize = maxSize < sch_len? sch_len : maxSize;
+        }
+
+        maxName += padding*2;
+        maxSize += padding*2;
+
+        String boundary = PrettyPrinter.getBorder(maxName, "+", "-")
+                + PrettyPrinter.getBorder(maxSize, "+", "-") + "+";
+        String header = PrettyPrinter.getBox("Table", maxName, "|")
+                + PrettyPrinter.getBox("Schema", maxSize, "|") + "|";
+
+        // print out boundary
+        System.out.println(boundary + "\n" + header + "\n" + boundary);
+
+        for(String name: tables.keySet()) {
+            int size = tables.get(name).getData().size();
+            System.out.println(PrettyPrinter.getBox(name, maxName, "|")
+                    + PrettyPrinter.getBox(tables.get(name).schemaToString(), maxSize, "|") + "|");
+        }
+        System.out.println(boundary);
+    }
 
 }

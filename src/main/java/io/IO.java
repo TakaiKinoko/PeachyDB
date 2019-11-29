@@ -6,7 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.List;
-import index.*;
+//import index.*;
 import db.*;
 
 public class IO{
@@ -33,7 +33,7 @@ public class IO{
             if (path_matcher.find()) {
                 path = path_matcher.group(1);
                 //TODO: delete test println
-                System.out.println(path);
+                //System.out.println(path);
             }else {
                 System.out.println("Illegal format of file path");
                 return false;
@@ -42,7 +42,7 @@ public class IO{
             if(name_matcher.find()){
                 name = name_matcher.group(1);
                 //TODO: delete the test println
-                System.out.println(name);
+                //System.out.println(name);
             }else {
                 System.out.println("Illegal name to assign to a table");
                 return false;
@@ -60,6 +60,7 @@ public class IO{
             File file = new File(path);
             BufferedReader br = new BufferedReader(new FileReader(file));
             // call db.insertData
+            System.out.println("\nreading from file: " + path + " into table: " + name + "...\n");
             String st;
             String schema;
             String[] subs, names;
@@ -68,13 +69,24 @@ public class IO{
                 // split each line into an array of string/int
                 // add the entry to the database as an heterogenous arraylist
                 //TODO the first line is schema!!!!
+
                 if((schema = br.readLine()) != null){
-                    names = schema.trim().split("|");
-                    db.setSchema(names, name);
+                    //System.out.println(schema);
+                    // TODO IMPORTANT!! regex needs to be escaped!!
+                    names = schema.trim().split("\\|");
+                    //TODO delete the test lines below
+                    //System.out.println("Number of columns: " + names.length);
+                    //for(String n: names)
+                        //System.out.println(n);
+                    //System.out.println();
+                    Boolean success = db.setSchema(names, name);
+                    if(!success){
+                        System.out.println("Error occurred while setting schema.");
+                    }
                 }
 
                 while ((st = br.readLine()) != null) {
-                    subs = st.trim().split("|");
+                    subs = st.trim().split("\\|");
                     entry = new ArrayList<>();
                     for(String sub: subs){
                         if(isNumeric(sub))
@@ -85,8 +97,12 @@ public class IO{
                     db.insertData(entry, name);
                 }
 
+                // TODO delete the print
+                db.getTable(name).printData();
+
                 // TODO print out database size after all has been read in
-                System.out.println("Number of entries inserted is: " + db.getData(name).size());
+                // below line is migrated to Table.printData
+                //System.out.println("Number of entries inserted is: " + db.getTable(name).getTableSize());
             }catch(IOException io_e){
                 System.out.println("Something wrong happened while reading the file!");
                 return false;

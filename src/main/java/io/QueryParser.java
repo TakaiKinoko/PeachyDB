@@ -4,6 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import algebra.*;
+import aggregation.*;
 
 public class QueryParser {
 
@@ -21,7 +22,7 @@ public class QueryParser {
      * - join
      * - groupby
      * ===============
-     * aggregate
+     * Aggregate
      * ===============
      * - count
      * - sum
@@ -82,7 +83,7 @@ public class QueryParser {
         concat_p = Pattern.compile("^concat");         // 18
         */
         this.io = io;
-        patterns = new Pattern[20];
+        patterns = new Pattern[21];
         // I/O
         int i = 0;
         patterns[i++] = Pattern.compile("inputfromfile"); // 0
@@ -97,9 +98,9 @@ public class QueryParser {
         patterns[i++] = Pattern.compile("join");     // 7
         patterns[i++] = Pattern.compile("groupby");  // 8
         // AGGREGATE
-        patterns[i++] = Pattern.compile("count");    // 9
-        patterns[i++] = Pattern.compile("sum");      // 10
-        patterns[i++] = Pattern.compile("avg");      // 11
+        patterns[i++] = Pattern.compile("count(\\(|\\s)");    // 9
+        patterns[i++] = Pattern.compile("(=|\\s)sum(\\(|\\s)");      // 10
+        patterns[i++] = Pattern.compile("(=|\\s)avg(\\(|\\s)");      // 11
         patterns[i++] = Pattern.compile("countgroup");  // 12
         patterns[i++] = Pattern.compile("sumgroup");    // 13
         patterns[i++] = Pattern.compile("avggroup");    // 14
@@ -110,6 +111,7 @@ public class QueryParser {
         patterns[i++] = Pattern.compile("sort");        // 17
         patterns[i++] = Pattern.compile("concat");      // 18
         patterns[i++] = Pattern.compile("showtables");  // 19
+        patterns[i++] = Pattern.compile("showschema");  // 19
 
         command_num = i;  // number of commands the program takes
 
@@ -127,10 +129,11 @@ public class QueryParser {
 
         if(matchers[0].find()){
             //TODO delete test print
-            System.out.println("Command: inputfromfile");
+            //System.out.println("Command: inputfromfile");
             io.inputfromfile(s);
         }else if(matchers[1].find()){
             // outputtofile
+            System.out.println("outputtofile");
         }else if(matchers[2].find()){
             // search
         }else if(matchers[3].find()){
@@ -138,38 +141,66 @@ public class QueryParser {
         }else if(matchers[4].find()){
             // delete
         }else if(matchers[5].find()){
+            // select
+            //System.out.println("A select query.");
             Select selector = new Select(io.db);
             selector.select(s);
-            // select
         }else if(matchers[6].find()){
+            System.out.println("A project query.");
+            Project projector = new Project(io.db);
+            projector.project(s);
             // project
         }else if(matchers[7].find()){
+            Join joiner = new Join(io.db, s);
+            joiner.join(s);
+
             // join
         }else if(matchers[8].find()){
             // groupby
         }else if(matchers[9].find()){
+            Aggregate agg = new Aggregate(io.db);
+            agg.count(s);
             // count
         }else if(matchers[10].find()){
+            Aggregate agg = new Aggregate(io.db);
+            agg.sum(s);
             // sum
         }else if(matchers[11].find()){
+            Aggregate agg = new Aggregate(io.db);
+            agg.avg(s);
             // avg
         }else if(matchers[12].find()){
+            GroupAgg ga = new GroupAgg(io.db);
+            ga.countgroup(s);
             // countgroup
         }else if(matchers[13].find()){
+            GroupAgg ga = new GroupAgg(io.db);
+            ga.sumgroup(s);
             // sumgroup
         }else if(matchers[14].find()){
+            GroupAgg ga = new GroupAgg(io.db);
+            ga.avggroup(s);
             // avggroup
         }else if(matchers[15].find()){
+            Moving ma = new Moving(io.db);
+            ma.movsum(s);
             // movsum
         }else if(matchers[16].find()){
+            Moving ma = new Moving(io.db);
+            ma.movavg(s);
             // movavg
         }else if(matchers[17].find()){
             // sort
         }else if(matchers[18].find()) {
+            Concat.concat(io.db, s);
             // concat
         }else if(matchers[19].find()) {
             // showtables
             io.db.showtables();
+        }else if(matchers[20].find()){
+            //showshema
+            io.db.showSchema();
+
         }else{
             // error
             System.out.println("There's syntax error in the query.");

@@ -1,7 +1,8 @@
 package db;
 
-import java.util.ArrayList;
-import java.util.Map;
+import util.*;
+
+import java.util.*;
 
 public class Table {
     /**
@@ -13,10 +14,45 @@ public class Table {
     //private List<IIndex> indices;
     public String name;  // name is the string before ":=" in a command
     private Map<String, Integer> schema; // map column names to its index
+    private boolean isDerivative = false;  // indicates that the table is built as a subset of another table
 
     public Table(String name){
-        data = new ArrayList<>();
+        /**
+         * The number of ArrayList within data will be decided when schema is set
+         * */
+        data = new ArrayList();
+        data.add(new ArrayList()); // the only column added when initializing table is the index column
         this.name = name;
+        schema = new HashMap<>();
+    }
+
+    public void isDerivative(){
+        isDerivative = true;
+    }
+
+    public int getTableSize(){
+        return data.get(0).size();
+    }
+
+    public void printData() {
+
+        // TODO pretty printer
+        System.out.println("\n\n========================\n" +
+                           "  TABLE: " + name +
+                         "\n========================");
+        System.out.println(schemaToString());
+        //System.out.println("FINE AFTER PRINTING SCHEMA");
+        for(Object index: data.get(0)){
+            int ind = (int)index;
+            //System.out.println("Index: " + ind);
+            StringBuilder entry = new StringBuilder();
+            entry.append(ind+": ");
+            for(int i = 1; i < data.size(); i++){
+                entry.append(data.get(i).get(ind) + " ");
+            }
+            System.out.println(entry.toString());
+        }
+        System.out.println("Number of entries inserted is: " + size() + "\n\n");
     }
 
     public boolean insertData(ArrayList entry){
@@ -26,10 +62,78 @@ public class Table {
          * @return true if no error, false otherwise
          * */
         try{
-            data.add(entry);
+            int i = 0;
+            data.get(i++).add(getTableSize());  // index is 0-based
+
+            for(Object e: entry){
+                data.get(i++).add(e);
+            }
             // TODO manage indices
             return true;
         }catch(Exception e) {
+            return false;
+        }
+    }
+
+    public boolean addColumn(ArrayList col){
+        try{
+            this.data.add(col);
+            return true;
+        }catch(Exception e){
+            System.out.println("Exception while adding column.");
+            return false;
+        }
+    }
+
+    public boolean updateColumn(int col, ArrayList newcol){
+        /**
+         * switch off the @param col'th column of the data with the @param newcol
+         * */
+        try{
+            data.remove(col);
+            data.add(col, newcol);
+            return true;
+        }catch(Exception e){
+            System.out.println("Exception while updating the " + col + "th column.");
+            return false;
+        }
+    }
+
+    public boolean setSchema(String[] cols) {
+        /**
+         * @param cols: array of column names read from the input data file
+         * @return: true if no error, false otherwise
+         * */
+        //System.out.println("in Table.java setSchema!!!");
+
+        try{
+            for(int i = 0; i < cols.length; i++){
+                //System.out.println(cols[i]);
+                // index is one-based, because the 0th data column is its index which was created in constructor
+                schema.put(cols[i], i+1);
+                // each column correspond to an arrayList
+                data.add(new ArrayList());
+            }
+            //System.out.println("SCHEMA:" + schemaToString());
+            schema = Utils.sortMapByValue(schema);
+            return true;
+        }catch(Exception e) {
+            System.out.println("Error when setting schema!");
+            return false;
+        }
+
+    }
+
+    public boolean updateSchema(Map<String, Integer> schema){
+        /**
+         * Note that this function doesn't add new columns to the table as setSchema() does
+         * */
+        try {
+            this.schema = schema;
+            schema = Utils.sortMapByValue(schema);
+            return true;
+        }catch(Exception e){
+            System.out.println("Exception while updating schema for the target table.");
             return false;
         }
     }
@@ -42,25 +146,47 @@ public class Table {
         return data;
     }
 
-    public boolean setSchema(String[] cols) {
+    public int[] prettyPrintNameLen(){
         /**
-         * @param cols: array of column names read from the input data file
-         * @return: true if no error, false otherwise
+         * @return an integer pair of <table_name_len, data_size_len>
          * */
-        try{
-            for(int i = 0; i < cols.length; i++)
-                schema.put(cols[i], i);
-            return true;
-        }catch(Exception e) {
-            return false;
-        }
-    }
-
-    public int[] prettyPrintLen(){
         int[] len = new int[2];
         len[0] = name.length();
         len[1] = String.valueOf(data.size()).length();
         return len;
+    }
+
+    public int prettyPrintSchemaLen(){
+        return schemaToString().length();
+    }
+
+    public String schemaToString() {
+        /**
+         * @return the string representation of the schema as a one-liner
+         *
+         * if the table is derivative, it's columns names are going to be of the format: <name>_<column name>
+         * */
+        schema = Utils.sortMapByValue(schema);  // otherwise doesn't come in order
+
+        try {
+            String res = "";
+            for (String s : schema.keySet()) {
+                if(!isDerivative)
+                    //res += schema.get(s) + ": " + s + " | ";   // index + colname
+                    res += s + " | ";   // just index
+                else
+                    //res += schema.get(s) + ": " + name + "_" + s + " | "; // index + colname
+                    res += name + "_" + s + " | ";  // just index
+            }
+            return res;
+        }catch(Exception e){
+            System.out.println("Error happened while reading the schema.");
+            return "ERROR";
+        }
+    }
+
+    public int size(){
+        return data.get(0).size();
     }
     /*
     public List<IIndex> getIndices() {
