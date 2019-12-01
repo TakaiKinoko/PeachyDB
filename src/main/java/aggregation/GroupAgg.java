@@ -8,13 +8,17 @@ import util.*;
 public class GroupAgg {
     private Database db;
 
+    public enum Map_type {
+        TREE, HASH;
+    }
+
     public GroupAgg(Database db){
         this.db = db;
     }
 
     public void sumgroup(String s){
         try {
-            Map<GroupKey, ArrayList> res = toGroups(s);
+            Map<GroupKey<String>, ArrayList> res = toGroups(s);
 
             // compute sum for each group
             for(GroupKey k: res.keySet()){
@@ -22,7 +26,7 @@ public class GroupAgg {
                 for(Object g: k.getKey())
                     System.out.print(g + " ");
                 ArrayList box = res.get(k);
-                Double sum = Utils.calculateSum(box);
+                Double sum = Utils.calculateSumList(box);
                 System.out.println("sum: " + sum);
             }
             Variable var = new Variable(Parser.get_toTable(s), res);
@@ -34,7 +38,7 @@ public class GroupAgg {
 
     public void avggroup(String s){
         try {
-            Map<GroupKey, ArrayList> res = toGroups(s);
+            Map<GroupKey<String>, ArrayList> res = toGroups(s);
 
             // compute sum for each group
             for(GroupKey k: res.keySet()){
@@ -42,7 +46,7 @@ public class GroupAgg {
                 for(Object g: k.getKey())
                     System.out.print(g + " ");
                 ArrayList box = res.get(k);
-                Double sum = Utils.calculateAverage(box);
+                Double sum = Utils.calculateAverageList(box);
                 System.out.println("sum: " + sum);
             }
 
@@ -56,7 +60,7 @@ public class GroupAgg {
 
     public void countgroup(String s){
         try {
-            Map<GroupKey, ArrayList> res = toGroups(s);
+            Map<GroupKey<String>, ArrayList> res = toGroups(s);
 
             // compute sum for each group
             for(GroupKey k: res.keySet()){
@@ -74,7 +78,8 @@ public class GroupAgg {
         }
     }
 
-    public TreeMap<GroupKey, ArrayList> groupby(Table tb, int target, String[] groupby){
+    // UPDATED
+    public TreeMap<GroupKey<String>, ArrayList> groupby(Table tb, int target, String[] groupby, Map_type t){
         /**
          * Group by one column at a time.
          * @param tb: table to operate on
@@ -86,12 +91,25 @@ public class GroupAgg {
          * Iterate over the data, drop each entry's index in the "box"
          * determined by the unique combination of groupby constraint tuple
          * */
-        TreeMap<GroupKey, ArrayList> res = new TreeMap<>(new GroupKeyComp());
-        ArrayList<ArrayList> data = tb.getData();
+        TreeMap<GroupKey<String>, ArrayList> res;
 
+        //if(t == Map_type.TREE)
+        res = new TreeMap<>(new GroupKeyComp());
+        //else
+            //res = new HashMap<>();
+
+
+        String[][] data;
+        try {
+            data = tb.getData();
+        }catch(NullPointerException Ne){
+            System.out.println("table doesn't exist.");
+            return null;
+        }
+
+        int table_size = tb.getTableSize();
         // get index column of the data
-        ArrayList index = data.get(0);
-        //System.out.println("!!!" + index.size() + "!!!");
+        //ArrayList index = data.get(0);
 
         // get the numbers of the columns that serve as the groupby condition
         int[] gb_cond = new int[groupby.length];
@@ -101,46 +119,44 @@ public class GroupAgg {
             //System.out.println("..." + gb_cond[i] + "...");
         }
 
-        ArrayList target_col = data.get(target);
-        //System.out.println(target_col.size());
+        //String[] target_col = data[target];
 
         int ind, cnt;
-        for(Object i: index) {
-            ind = (Integer)i;  // get row index
-            Object[] comp = new Object[groupby.length];
-            cnt = 0;
-            for(int col: gb_cond){
-                comp[cnt] = data.get(col).get(ind);
-                cnt++;
+        try {
+            for (ind = 0; ind < table_size; ind++) {
+                //ind = (Integer)i;  // get row index
+                String[] comp = new String[groupby.length];
+                cnt = 0;
+                for (int col : gb_cond) {
+                    comp[cnt] = data[col][ind];
+                    cnt++;
+                }
+                GroupKey<String> key = new GroupKey(comp);
+                ArrayList box = res.getOrDefault(key, new ArrayList());
+                box.add(ind);
+                res.put(key, box);
             }
-            GroupKey key = new GroupKey(comp);
-            ArrayList box = res.getOrDefault(key, new ArrayList());
-            box.add(target_col.get(ind));
-            res.put(key, box);
+
+            // TODO delete
+            /*
+            for(GroupKey k: res.keySet()){
+                System.out.println(k.toString());
+                System.out.println(res.get(k));
+            }*/
+        }catch (Exception e){
+            System.out.println("Couldn't read from target table.");
+            return res;
         }
-
-
-        /*
-        System.out.println("Map size: " + res.size());
-        for(GroupKey k: res.keySet()){
-            for(Object g: k.key)
-                System.out.print(g + " ");
-            System.out.println();
-            ArrayList box = res.get(k);
-            for(Object o: box)
-                System.out.print(o + " ");
-            System.out.println();
-        } */
 
         return res;
     }
 
-    public Map<GroupKey, ArrayList> toGroups(String s){
+    public Map<GroupKey<String>, ArrayList> toGroups(String s){
         try{
             String toVar = Parser.get_toTable(s);
             String btwParens = Parser.get_conditions(s);
             ArrayList col;
-            Map<GroupKey, ArrayList> res;
+            Map<GroupKey<String>, ArrayList> res;
 
             String[] inside = btwParens.split(",");
             Table fromTable = db.getTable(inside[0].trim());
@@ -154,7 +170,7 @@ public class GroupAgg {
                 System.out.print(" " + groupby[i-2]);
             }
             System.out.println();
-            res = groupby(fromTable, target, groupby);
+            res = groupby(fromTable, target, groupby, Map_type.TREE);
 
             return res;
         }catch (Exception e) {

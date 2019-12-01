@@ -4,8 +4,6 @@ import db.*;
 import parser.*;
 import util.*;
 
-import java.util.ArrayList;
-
 public class Aggregate {
     private Database db;
 
@@ -13,11 +11,12 @@ public class Aggregate {
         this.db = db;
     }
 
+    // UPDATED
     public void avg(String s) {
         try {
             String toVar = Parser.get_toTable(s);
             String btwParens = Parser.get_conditions(s);
-            ArrayList col;
+            String[] col;
             Double res;
 
             col = Utils.getCol(btwParens, db);
@@ -34,12 +33,13 @@ public class Aggregate {
         }
     }
 
+    // UPDATED
     public void sum(String s) {
         try {
             String toVar = Parser.get_toTable(s);
             String btwParens = Parser.get_conditions(s);
             Table fromTable;
-            ArrayList col;
+            String[] col;
             Double res;
 
             col = Utils.getCol(btwParens, db);
@@ -56,15 +56,16 @@ public class Aggregate {
         }
     }
 
+    // UPDATED
     public void count(String s) {
         try {
             String toVar = Parser.get_toTable(s);
             String btwParens = Parser.get_conditions(s);
-            ArrayList col;
+            String[] col;
             int res;
 
             col = Utils.getCol(btwParens, db);
-            res = col.size();
+            res = col.length;
 
             Variable var = new Variable(toVar, res);
             db.newVariable(var);

@@ -39,7 +39,7 @@ public class Project {
                 }
 
                 // create new table
-                db.newTable(toTable);
+                db.newTable(toTable, cols.length, db.getTable(fromTable).getTableSize());
                 // set up schema
                 db.getTable(toTable).setSchema(cols);
                 // copy columns

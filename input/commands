@@ -3,16 +3,25 @@ R := inputfromfile(input/sales1.txt)
 S := inputfromfile(input/sales2.txt)
 ==================================================== AGGREGATE
 R1 := select(R, (time > 50) or (qty < 30))
+R2 := select(R, (time > 50) and (qty < 30))
 
 T := join(R, S, R.customerid = S.C)
 T := join(R1, S, R1.qty > S.Q)
 T := join(R1, S, R1.qty > S.Q)
 T := join(R, S, (R.customerid = S.C))
 T1 := join(R1, S, (R1.qty > S.Q) and (R1.saleid = S.saleid))
+
 Tsmall := join(R1, S, (R1.qty = S.Q) and (R1.saleid = S.saleid))
 Tsmall := join(R1, S, (R1.qty = S.Q) and (R1.saleid = S.saleid))
 Tinequality := join(R1, S, (R1.qty != S.Q) and (R1.saleid = S.saleid))
 
+T2 := join(R1, S, (R1.qty > S.Q) or (R1.saleid = S.saleid))
+
+
+RSUM := sumgroup(R, qty, customerid)
+S1 := sumgroup(S, Q, C)
+S2 := avggroup(S, Q, C)
+S3 := countgroup(S, Q, C)
 R4 := sumgroup(R1, time, qty)
 R5 := sumgroup(R1, qty, time, pricerange)
 
@@ -20,7 +29,7 @@ R6 := avggroup(R1, qty, pricerange)
 R7 := countgroup(R1, qty, itemid, pricerange)
 R8 := countgroup(R1, qty, customerid, pricerange)
 
-X := select(R1, customerid == 51)
+X := select(R, customerid = 51)
 X_stats := countgroup(X, qty, pricerange)
 
 M1 := movsum(R1, qty, 3)
@@ -30,11 +39,11 @@ M3 := movavg(R, qty, 10)
 A := project(R, saleid, qty, pricerange)
 B := project(A, saleid)
 
-N1 := project(N, saleid, T, Q , P )
+N1 := project(S, saleid, T, Q , P )
 N2 := project(N1, T, P )
 
-V1 := avg(R1, qty)
-V2 := sum(R1, qty)
+V1 := avg(R, qty)
+V2 := sum(R, qty)
 V3 := count(R, qty)
 ====================================================
 A := select(R, saleid>100)

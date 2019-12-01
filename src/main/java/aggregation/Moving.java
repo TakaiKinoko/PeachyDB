@@ -3,7 +3,6 @@ package aggregation;
 import db.*;
 import parser.Parser;
 import util.Utils;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Deque;
 
@@ -38,13 +37,14 @@ public class Moving {
         }
     }
 
+    // UPDATED
     private void apply(String s, Op op){
         /**
          *
          * */
         String btwParens, toTable;
         Table fromTable;
-        ArrayList col;
+        String[] col;
         int window;
 
         try {
@@ -67,37 +67,58 @@ public class Moving {
 
         try{
             // TODO newTable
-            db.newTable(toTable);
+            db.newEmptyTable(toTable);
 
+            System.out.println("Table created.");
             // TODO schema
             String[] cols = new String[fromTable.getSchema().size()+1];
-            String[] projects = new String[cols.length - 1];
+            String[] projects = new String[cols.length];
             int i = 0;
             for(String c: fromTable.getSchema().keySet()){
                 projects[i] = c;
                 cols[i++] = c;
             }
             cols[i] = "mov_sum";
+            System.out.println("Schema prepared.");
+            int newColNum = i+1;
+
+            // TODO data
+            db.getTable(toTable).initializeDataMatrix(new String[newColNum][fromTable.getTableSize()]);
+            String[][] todata = db.getData(toTable);
+            String[][] fromdata = fromTable.getData();
+            for(int j = 0; j < newColNum - 1; j++){
+                todata[j] = fromdata[j];
+            }
+
+            System.out.println("from table size: " + fromdata.length + fromdata[0].length);
+            System.out.println("to table size: " + todata.length + todata[0].length);
 
             db.setSchema(cols, toTable);
-            int movsum_col = db.getTable(toTable).getSchema().get("mov_sum");
-            ArrayList movsum = db.getTable(toTable).getData().get(movsum_col); // mov_sum column
+            System.out.println("Schema set up.");
 
+            int movsum_col = db.getTable(toTable).getSchema().get("mov_sum");
+            String[] movsum = db.getTable(toTable).getData()[movsum_col]; // mov_sum column
+
+            for(String n: db.getTable(toTable).getSchema().keySet()){
+                System.out.println("result table col: "+ n);
+            }
             // TODO populate table
-            db.projectTable(fromTable.name, toTable, projects);
+            // TODO -- WRONG?? NEW COLUMN HASN'T BEEN ADDED YET??
+            //db.projectTable(fromTable.name, toTable, projects);
+
 
             // TODO compute moving sum
             Deque<Integer> Q = new LinkedList<Integer>();
 
-            for(int j = 0; j < fromTable.getData().get(0).size(); j++){
+            for(int j = 0; j < fromTable.getTableSize(); j++){
                 if(Q.size() >= window)
                     Q.removeFirst();
-                Q.addLast((Integer)(col.get(j)));
+                Q.addLast(Integer.valueOf(col[j]));
                 Integer sum = sumDeque(Q);
                 if(op == Op.SUM)
-                    movsum.add(sum);
+                    movsum[j] = String.valueOf(sum);
                 else if(op == Op.AVG)
-                    movsum.add(sum / window);
+                    movsum[j] = String.valueOf(sum / window);
             }
 
             // TODO print table

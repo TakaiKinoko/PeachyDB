@@ -7,9 +7,38 @@ import java.util.*;
 
 public class Utils{
 
-    public static double calculateAverage(ArrayList col) {
+    public static double calculateAverage(String[] col) {
         try {
             double sum = calculateSum(col);
+            if (col != null && col.length != 0)
+                return sum / col.length;
+            return sum;
+        }catch(Exception e){
+            System.out.println("Exception when calculating avg.");
+            return 0.0;
+        }
+    }
+
+    public static double calculateSum(String[] col) {
+        try{
+            double sum = 0;
+            if(col != null && col.length != 0) {
+                for(String s : col) {
+                    //System.out.print(mark + " ");
+                    sum += Double.valueOf(s);
+                }
+            }
+            return sum;
+        }catch(Exception e){
+            System.out.println("Exception when calculating sum.");
+            return 0.0;
+        }
+    }
+
+    /*
+    public static double calculateAverageList(ArrayList col) {
+        try {
+            double sum = calculateSumList(col);
             if (col != null && col.size() != 0)
                 return sum / col.size();
             return sum;
@@ -19,13 +48,44 @@ public class Utils{
         }
     }
 
-    public static double calculateSum(ArrayList<Integer> col) {
+    public static double calculateSumList(ArrayList col) {
         try{
             double sum = 0;
             if(col != null && col.size() != 0) {
-                for(Integer mark : col) {
-                    //System.out.print(mark + " ");
-                    sum += mark;
+                System.out.println("\nNOT null");
+                for(Object mark : col) {
+                    System.out.println("\ninside loop");
+                    System.out.print(mark + " ");
+                    sum += Double mark;
+                }
+            }
+            return sum;
+        }catch(Exception e){
+            System.out.println("Exception when calculating sum.");
+            return 0.0;
+        }
+    }*/
+
+    public static double calculateAverageList(ArrayList col) {
+        try {
+            double sum = calculateSumList(col);
+            if (col != null && col.size() != 0)
+                return sum / col.size();
+            return sum;
+        }catch(Exception e){
+            System.out.println("Exception when calculating avg.");
+            return 0.0;
+        }
+    }
+
+    public static double calculateSumList(ArrayList<String> col) {
+        //System.out.println("\nINSIDE UTILS" + col);
+        try{
+            double sum = 0;
+            if(col != null && col.size() != 0) {
+                for(int i = 0; i < col.size(); i++) {
+
+                    sum += Double.valueOf(col.get(i));
                 }
             }
             return sum;
@@ -58,12 +118,13 @@ public class Utils{
         }
     }
 
-    public static ArrayList getCol(String btwParens, Database db){
+    // UPDATED
+    public static String[] getCol(String btwParens, Database db){
         String[] inside = btwParens.split(",");
         Table fromTable = getFromTable(btwParens, db);
 
         try {
-            return fromTable.getData().get(fromTable.getSchema().get(inside[1].trim()));
+            return fromTable.getData()[fromTable.getSchema().get(inside[1].trim())];
         }catch(Exception e){
             System.out.println("Error while extracting the column from table.");
             return null;

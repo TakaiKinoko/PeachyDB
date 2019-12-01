@@ -152,8 +152,7 @@ public class QueryParser {
             // project
         }else if(matchers[7].find()){
             Join joiner = new Join(io.db, s);
-            joiner.join(s);
-
+            joiner.join();
             // join
         }else if(matchers[8].find()){
             // groupby

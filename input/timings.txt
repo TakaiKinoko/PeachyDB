@@ -1,0 +1,215 @@
+T := join(R, S, R.customerid = S.C)
+============================================
+equal() costs 1 milliseconds.
+evaluateArith() costs 232 milliseconds.
+printData() costs 13 milliseconds.
+cartesianProductTable() costs 24 milliseconds.
+
+
+Tsmall := join(R1, S, (R1.qty = S.Q) and (R1.saleid = S.saleid))
+============================================
+equal() costs 3 milliseconds.
+and() costs 2744 milliseconds.
+evaluateArith() costs 443 milliseconds.
+printData() costs 0 milliseconds.
+cartesianProductTable() costs 0 milliseconds.
+
+
+T1 := join(R1, S, (R1.qty > S.Q) and (R1.saleid = S.saleid))
+============================================
+equal() costs 3 milliseconds.
+and() costs 60611 milliseconds.
+evaluateArith() costs 644 milliseconds.
+printData() costs 1 milliseconds.
+cartesianProductTable() costs 3 milliseconds.
+
+
+T2 := join(R1, S, (R1.qty > S.Q) or (R1.saleid = S.saleid))
+============================================
+or() costs 61088 milliseconds.
+equal() costs 6 milliseconds.
+evaluateArith() costs 599 milliseconds.
+printData() costs 132088 milliseconds.
+cartesianProductTable() costs 50871 milliseconds.
+
+(printed 40943108 records)
+
+
+Tinequality := join(R1, S, (R1.qty != S.Q) and (R1.saleid = S.saleid))
+============================================
+equal() costs 2 milliseconds.
+and() costs 125453 milliseconds.
+evaluateArith() costs 642 milliseconds.
+printData() costs 2 milliseconds.
+cartesianProductTable() costs 1 milliseconds.
+
+
+
+T1: with original order ind_pair1 and ind_pair2 within and()
+============================================
+equal() costs 3 milliseconds.
+sort within and() costs 2 milliseconds.
+and() costs 59117 milliseconds.
+evaluateArith() costs 629 milliseconds.
+printData() costs 2 milliseconds.
+cartesianProductTable() costs 4 milliseconds.
+
+
+T1 with HashSet
+============================================
+equal() costs 3 milliseconds.
+and() costs 28697 milliseconds.
+evaluateArith() costs 681 milliseconds.
+printData() costs 0 milliseconds.
+cartesianProductTable() costs 1 milliseconds.
+
+
+Timing the CONVERSION!!
+============================================
+equal() costs 3 milliseconds.
+and() costs 21849 milliseconds.
+convert to hash: costs 18011 milliseconds.
+evaluateArith() costs 634 milliseconds.
+printData() costs 0 milliseconds.
+cartesianProductTable() costs 0 milliseconds.
+
+
+All HashSet
+============================================
+equal() costs 3 milliseconds.
+and() costs 8505 milliseconds.
+evaluateArith() costs 344 milliseconds.
+printData() costs 3 milliseconds.
+inequal() costs 5 milliseconds.
+cartesianProductTable() costs 4 milliseconds.
+
+
+after fixed
+============================================
+groupby() within evaluateArith costs 424 milliseconds.  -- group by is now under 50 ms/call
+equal() costs 3 milliseconds.
+and() costs 8291 milliseconds.
+evaluateArith() costs 424 milliseconds.
+getCartesianList() costs 0 milliseconds.
+printData() costs 2 milliseconds.
+inequal() costs 16 milliseconds.
+cartesianProductTable() costs 4 milliseconds.
+Total cost of time: 29.6320 sec
+
+Improved groupby (using hashmap instead of treemap)
+============================================
+groupby() within evaluateArith costs 130 milliseconds.
+equal() costs 1 milliseconds.
+and() costs 8501 milliseconds.
+evaluateArith() costs 131 milliseconds.
+getCartesianList() costs 0 milliseconds.
+printData() costs 3 milliseconds.
+inequal() costs 8 milliseconds.
+cartesianProductTable() costs 5 milliseconds.
+another groupby() costs 130 milliseconds.
+Total cost of time: 28.0620 sec
+
+
+NOT USING HASHSET:
+============================================
+equal() costs 5 milliseconds.
+and() costs 50472 milliseconds.
+evaluateArith() costs 410 milliseconds.
+printData() costs 4 milliseconds.
+cartesianProductTable() costs 3 milliseconds.
+Total time: 53.3950 sec
+
+
+ALTERNATIVE AND
+============================================
+groupby() within evaluateArith costs 136 milliseconds.
+equal() costs 1 milliseconds.
+and() costs 7421 milliseconds.
+alternative and() costs 1 milliseconds.
+evaluateArith() costs 136 milliseconds.
+getCartesianList() costs 1 milliseconds.
+printData() costs 3 milliseconds.
+inequal() costs 6 milliseconds.
+cartesianProductTable() costs 5 milliseconds.
+another groupby() costs 136 milliseconds.
+Total cost of time: 40.4950 sec
+
+
+iterate the smaller set in AND
+============================================
+groupby() within evaluateArith costs 37 milliseconds.
+equal() costs 1 milliseconds.
+and() costs 1 milliseconds.
+evaluateArith() costs 37 milliseconds.
+getCartesianList() costs 0 milliseconds.
+printData() costs 2 milliseconds.
+inequal() costs 6 milliseconds.
+cartesianProductTable() costs 4 milliseconds.
+another groupby() costs 37 milliseconds.
+Total cost of time: 19.3880 sec
+
+
+
+
+#2 (join) costs 0 milliseconds.
+
+
+Total cost of time: 22.9410 sec
+
+
+#1 (constructor) costs 0 milliseconds.
+#2 (join) costs 0 milliseconds.
+#3 (join) costs 0 milliseconds.
+#4 (join) costs 0 milliseconds.
+#5 (join) costs 1 milliseconds.
+#6 (evalArith) costs 1 milliseconds.
+#7 (evalArith) costs 4 milliseconds.
+#8 (evalArith) costs 56 milliseconds.
+#9 (evalArith) costs 56 milliseconds.
+#10 (evalArith) costs 56 milliseconds.
+#11 (notEqual) costs 56 milliseconds.
+#12 (notEqual) costs 56 milliseconds.
+#13 (notEqual) costs 81 milliseconds.
+======================================================================
+NO CODE ACTUALLY GETS EXECUTED HERE. IT'S THE INFAMOUS GC PAUSE!!!
+======================================================================
+#14 (join) costs 19510 milliseconds.
+#15 (evalArith) costs 19510 milliseconds.
+#16 (evalArith) costs 19511 milliseconds.
+#17 (evalArith) costs 19548 milliseconds.
+#18 (evalArith) costs 19548 milliseconds.
+#19 (evalArith) costs 19548 milliseconds.
+#20 (join) costs 19550 milliseconds.
+parse within join costs 0 milliseconds.
+evaluateArith() costs 47 milliseconds.
+equal() costs 2 milliseconds.
+inequal() costs 5 milliseconds.
+groupby() within evaluateArith costs 47 milliseconds.
+another groupby() costs 47 milliseconds.
+and() costs 1 milliseconds.
+
+cartesianProductTable() costs 4 milliseconds.
+getCartesianList() costs 1 milliseconds.
+printData() costs 3 milliseconds.
+
+
+
+#1(constructor) costs 0 milliseconds.
+#2(join) costs 0 milliseconds.
+#3(join) costs 0 milliseconds.
+#4(join) costs 0 milliseconds.
+#5(join) costs 0 milliseconds.
+#6(evalArith) costs 0 milliseconds.
+#7(evalArith) costs 1 milliseconds.
+#8(evalArith) costs 40 milliseconds.
+#9(evalArith) costs 40 milliseconds.
+#10(evalArith) costs 40 milliseconds.
+#11(join) costs 22352 milliseconds.
+#12(evalArith) costs 22352 milliseconds.
+#13(evalArith) costs 22354 milliseconds.
+#14(evalArith) costs 22681 milliseconds.
+#15(evalArith) costs 22681 milliseconds.
+#16(evalArith) costs 22681 milliseconds.
+#17(join) costs 22765 milliseconds.
+
+

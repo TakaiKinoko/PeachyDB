@@ -47,7 +47,7 @@ public class Select {
             // update database
             if(!cond.equals("") && !toTable.equals("") && fromTable != null) {
                 res = evaluateSelect(toTable.trim(), cond, fromTable, db);
-                //System.out.println("FINE AFTER EVALUATESELECT");
+                System.out.println("FINE AFTER EVALUATESELECT");
                 // add resulting table to the database
                 //db.addTable(res);
             }
@@ -57,27 +57,35 @@ public class Select {
         }
     }
 
-    public static Table evaluateSelect(String name, String cond, Table table, Database db) {
+    // UPDATED
+    public static Table evaluateSelect(String to_table, String cond, Table from_table, Database db) {
         /**
          * used with "select" query, called from algebra.Select.
-         * @param name: name of the resulting table
+         * @param to_table: name of the resulting table
          * @param cond: string containing the query conditions
          * @param db: database to get the target table from
-         * @param table: name of the table to perform the query on
+         * @param from_table: name of the table to perform the query on
          *
-         * @return: a new table with @name in the @db that satisfies query conditions @cond
+         * @return: a new table with name of @to_table in the @db that satisfies query conditions @cond
          * */
-        //Table res = new Table(name);  // need to set schema and data for table res
-        db.newTable(name);
-        db.getTable(name).isDerivative();  // mark this table as derivative
-        Table res = db.getTable(name);
+        //Table res = new Table(to_table);  // need to set schema and data for table res
+        Table res;
+
+        try{
+            db.newEmptyTable(to_table);
+            db.getTable(to_table).isDerivative();  // mark this table as derivative
+            res = db.getTable(to_table);
+        }catch(Exception e){
+            System.out.println("Couldn't create destination table.");
+            return null;
+        }
 
         List<Integer> ind_selected;
-        Map<String, Integer> schema = table.getSchema();
+        Map<String, Integer> from_schema = from_table.getSchema();
 
         if(Parser.is_arith_string(cond)) {
             // one condition
-            ind_selected = evaluate_arith(cond, schema, table);
+            ind_selected = evaluate_arith(cond, from_schema, from_table);
             //for(Integer i: ind_selected)
             //System.out.println("ARITH RESULT: " + i);
         }
@@ -89,14 +97,14 @@ public class Select {
             cond1 = cond1.replaceAll("\\)+$", "");            // get rid of trailing close parens
             //System.out.println("AFTER TRIMMING: " + cond1);
 
-            List<Integer> left = evaluate_arith(cond1, schema, table);
+            List<Integer> left = evaluate_arith(cond1, from_schema, from_table);
             //TODO delete test lines
             if(left.size() == 0)
                 System.out.println("\nDidn't find any matching record.");
             //for(Integer i: left)
             //System.out.println("res: " + i);
 
-            List<Integer> right = evaluate_arith(Parser.trim_cond(parts[2]), schema, table);
+            List<Integer> right = evaluate_arith(Parser.trim_cond(parts[2]), from_schema, from_table);
             //TODO delete test lines
             if(right.size() == 0)
                 System.out.println("\nDidn't find any matching record.");
@@ -119,22 +127,22 @@ public class Select {
         if(ind_selected.size() == 0)
             System.out.println("\nDidn't find any matching record.");
 
-        //for(int i: ind_selected)
-        //    System.out.println(i);
 
         // TODO set schema for new table
-        String[] newcols = new String[schema.size()];
+        String[] newcols = new String[from_schema.size()];
         int i = 0;
-        for(String col: schema.keySet()){
+        for(String col: from_schema.keySet()){
             newcols[i++] = col;
         }
-        db.setSchema(newcols, name);
-        //System.out.println("FINE AFTER SETTING SCHEMA");
+        db.setSchema(newcols, to_table);
+        System.out.println("FINE AFTER SETTING SCHEMA");
         // TODO populate the new table
-        if(!db.copySubset(table.name, name, ind_selected))
+        if(!db.copySubset(from_table.name, to_table, ind_selected))
             System.out.println("Error when populating the resulting table.");
         // TODO print out new table
-        //System.out.println("FINE AFTER POPULATING NEW TABLE");
+        System.out.println("FINE AFTER POPULATING NEW TABLE");
+
+        System.out.println("Size:" + res.getTableSize());
         res.printData();
         return res;
     }
@@ -190,30 +198,31 @@ public class Select {
         return left;
     }
 
+    // UPDATED
     public static List<Integer> evaluate_arith(String s, Map<String, Integer> schema, Table table){
         /**
          * @return the indices of the entries selected
          * */
         List<Integer> res = new ArrayList<>();
         String[] qs = Parser.arith_match(s);
-        ArrayList col;
+        String[] col;
         String constraint;
 
         // TODO delete
-        //System.out.println("\nEvaluating arithmetic expression");
+        System.out.println("\nEvaluating arithmetic expression");
         try {
-            //System.out.println(qs[0]);
-            //System.out.println(qs[1]);
-            //System.out.println(qs[2]);
-            //for(String k: schema.keySet())
-            //    System.out.println(k);
+            System.out.println(qs[0]);
+            System.out.println(qs[1]);
+            System.out.println(qs[2]);
+            for(String k: schema.keySet())
+                System.out.println(k);
             if (schema.keySet().contains(qs[0])) {
 
-                col = table.getData().get(schema.get(qs[0]));   // column is on the left of the operator
+                col = table.getData()[schema.get(qs[0])];   // column is on the left of the operator
                 constraint = qs[2];
             }
             else {
-                col = table.getData().get(schema.get(qs[2]));   // column is on the right of the operator
+                col = table.getData()[schema.get(qs[2])];   // column is on the right of the operator
                 constraint = qs[0];
             }
 
@@ -222,8 +231,8 @@ public class Select {
             switch(qs[1]){
                 case ">":
                     try {
-                        for (int i = 0; i < col.size(); i++) {
-                            if ((Integer) col.get(i) > Integer.valueOf(constraint))
+                        for (int i = 0; i < col.length; i++) {
+                            if (Integer.valueOf(col[i]) > Integer.valueOf(constraint))
                                 res.add(i);
                         }
                     }catch(Exception e){
@@ -232,8 +241,8 @@ public class Select {
                     break;
                 case "<":
                     try {
-                        for (int i = 0; i < col.size(); i++) {
-                            if ((Integer) col.get(i) < Integer.valueOf(constraint))
+                        for (int i = 0; i < col.length; i++) {
+                            if (Integer.valueOf(col[i]) < Integer.valueOf(constraint))
                                 res.add(i);
                         }
                     }catch(Exception e){
@@ -242,8 +251,8 @@ public class Select {
                     break;
                 case ">=":
                     try {
-                        for (int i = 0; i < col.size(); i++) {
-                            if ((Integer) col.get(i) >= Integer.valueOf(constraint))
+                        for (int i = 0; i < col.length; i++) {
+                            if (Integer.valueOf(col[i]) >= Integer.valueOf(constraint))
                                 res.add(i);
                         }
                     }catch(Exception e){
@@ -252,8 +261,8 @@ public class Select {
                     break;
                 case "<=":
                     try {
-                        for (int i = 0; i < col.size(); i++) {
-                            if ((Integer) col.get(i) <= Integer.valueOf(constraint))
+                        for (int i = 0; i < col.length; i++) {
+                            if (Integer.valueOf(col[i]) <= Integer.valueOf(constraint))
                                 res.add(i);
                         }
                     }catch(Exception e){
@@ -263,9 +272,9 @@ public class Select {
                 case "=":
                     //System.out.println("equallll");
                     try {
-                        for (int i = 0; i < col.size(); i++) {
+                        for (int i = 0; i < col.length; i++) {
                             //System.out.println(col.get(i)  + " " + String.valueOf(col.get(i)));
-                            if (String.valueOf(col.get(i)).equals(constraint))
+                            if (col[i].equals(constraint))
                                 res.add(i);
                         }
                     }catch(Exception e){
@@ -274,8 +283,8 @@ public class Select {
                     break;
                 case "!=":
                     try {
-                        for (int i = 0; i < col.size(); i++) {
-                            if (!String.valueOf(col.get(i)).equals(constraint))
+                        for (int i = 0; i < col.length; i++) {
+                            if (!col[i].equals(constraint))
                                 res.add(i);
                         }
                     }catch(Exception e){

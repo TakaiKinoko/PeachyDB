@@ -1,12 +1,10 @@
 package io;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.ArrayList;
-import java.util.List;
 //import index.*;
+
 import db.*;
 
 public class IO{
@@ -33,7 +31,7 @@ public class IO{
             if (path_matcher.find()) {
                 path = path_matcher.group(1);
                 //TODO: delete test println
-                //System.out.println(path);
+                System.out.println(path);
             }else {
                 System.out.println("Illegal format of file path");
                 return false;
@@ -42,7 +40,7 @@ public class IO{
             if(name_matcher.find()){
                 name = name_matcher.group(1);
                 //TODO: delete the test println
-                //System.out.println(name);
+                System.out.println(name);
             }else {
                 System.out.println("Illegal name to assign to a table");
                 return false;
@@ -52,63 +50,75 @@ public class IO{
             return false;
         }
 
-        // create new table
-        db.newTable(name);
-
         // parse each line of file into String[] s
+
+        File file = new File(path);
+        BufferedReader br;
+        String st;
+        String schema;
+        String[] subs, names;
+        String[] entry;  // container for data in each line
+        int lines = 0;
+        int col_num = 0;
+        // ================================================ FIRST READ: GET LINE COUNTS AND COL COUNT===============
         try {
-            File file = new File(path);
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            // call db.insertData
-            System.out.println("\nreading from file: " + path + " into table: " + name + "...\n");
-            String st;
-            String schema;
-            String[] subs, names;
-            ArrayList entry;
-            try{
-                // split each line into an array of string/int
-                // add the entry to the database as an heterogenous arraylist
-                //TODO the first line is schema!!!!
+            br = new BufferedReader(new FileReader(file));
 
-                if((schema = br.readLine()) != null){
-                    //System.out.println(schema);
-                    // TODO IMPORTANT!! regex needs to be escaped!!
-                    names = schema.trim().split("\\|");
-                    //TODO delete the test lines below
-                    //System.out.println("Number of columns: " + names.length);
-                    //for(String n: names)
-                        //System.out.println(n);
-                    //System.out.println();
-                    Boolean success = db.setSchema(names, name);
-                    if(!success){
-                        System.out.println("Error occurred while setting schema.");
-                    }
+            // READ COLUMN NUMBER (WILL BE THE ROW-DIM OF THE RESULTING TABLE)
+            if((schema = br.readLine()) != null)
+                col_num = schema.trim().split("\\|").length;
+            // LINE WILL BE THE COL-DIM OF THE RESULTING TABLE
+            while (br.readLine() != null) lines++;
+
+            // TODO create new table with data set up
+            db.newTable(name, col_num, lines);
+            br.close();
+        }catch(Exception E){
+            System.out.println("File not found or IO exception.");
+            return false;
+        }
+
+        //================================================ SECOND READ: READ DATA ==============================
+        // call db.insertData
+        System.out.println("\nreading from file: " + path + " into table: " + name + "...\n");
+        try{
+            // split each line into an array of string/int
+            // add the entry to the database as an heterogenous arraylist
+            br = new BufferedReader(new FileReader(file));
+
+            // READ SCHEMA IN
+            if((schema = br.readLine()) != null){
+                // IMPORTANT!! regex needs to be escaped!!
+                names = schema.trim().split("\\|");
+                Boolean success = db.setSchema(names, name);
+                if(!success){
+                    System.out.println("Error occurred while setting schema.");
                 }
-
-                while ((st = br.readLine()) != null) {
-                    subs = st.trim().split("\\|");
-                    entry = new ArrayList<>();
-                    for(String sub: subs){
-                        if(isNumeric(sub))
-                            entry.add(Integer.parseInt(sub));
-                        else
-                            entry.add(sub);
-                    }
-                    db.insertData(entry, name);
-                }
-
-                // TODO delete the print
-                db.getTable(name).printData();
-
-                // TODO print out database size after all has been read in
-                // below line is migrated to Table.printData
-                //System.out.println("Number of entries inserted is: " + db.getTable(name).getTableSize());
-            }catch(IOException io_e){
-                System.out.println("Something wrong happened while reading the file!");
-                return false;
             }
-        }catch(FileNotFoundException e){
-            System.out.println("File not found!");
+
+            while ((st = br.readLine()) != null) {
+                subs = st.trim().split("\\|");
+                //entry = new ArrayList<>();
+                entry = new String[col_num];
+                for(int i = 0; i< col_num; i++){
+                    /*
+                    if(isNumeric(sub))
+                        entry.add(Integer.parseInt(sub));
+                    else
+                        entry.add(sub);*/
+                    entry[i] = subs[i];
+                }
+                db.insertData(entry, name);
+            }
+
+            // TODO delete the print
+            db.getTable(name).printData();
+
+            // TODO print out database size after all has been read in
+            // below line is migrated to Table.printData
+            //System.out.println("Number of entries inserted is: " + db.getTable(name).getTableSize());
+        }catch(Exception io_e){
+            System.out.println("Something wrong happened while reading the file!");
             return false;
         }
 

@@ -79,26 +79,28 @@ names have the format of ```<table_name>_<column_name>```
 #### Total Lines of code
 ``` find . -name '*.java' | xargs wc -l```
 ```
-     173 ./aggregation/GroupAgg.java
-     118 ./aggregation/Moving.java
-      78 ./aggregation/Aggregate.java
-      26 ./util/PrettyPrinter.java
-      76 ./util/GroupKey.java
-     105 ./util/Utils.java
-      41 ./util/SortGroupKeyMap.java
-     132 ./io/IO.java
-     206 ./io/QueryParser.java
-     119 ./parser/Parser.java
-     273 ./parser/ParseUtil.java
-     190 ./db/Table.java
-     320 ./db/Database.java
-      15 ./db/Variable.java
-      25 ./Entry.java
-       4 ./algebra/Join.java
-      55 ./algebra/Select.java
-      55 ./algebra/Project.java
-      34 ./algebra/Concat.java
-      12 ./pair/IPair.java
-      42 ./pair/Pair.java
-    2099 total
+     173 ./java/aggregation/GroupAgg.java
+     118 ./java/aggregation/Moving.java
+      78 ./java/aggregation/Aggregate.java
+      26 ./java/util/PrettyPrinter.java
+      82 ./java/util/GroupKey.java
+     105 ./java/util/Utils.java
+      41 ./java/util/SortGroupKeyMap.java
+     132 ./java/io/IO.java
+     209 ./java/io/QueryParser.java
+     157 ./java/parser/Parser.java
+     195 ./java/db/Table.java
+     320 ./java/db/Database.java
+      15 ./java/db/Variable.java
+      24 ./java/Entry.java
+     559 ./java/algebra/Join.java
+     298 ./java/algebra/Select.java
+      55 ./java/algebra/Project.java
+      34 ./java/algebra/Concat.java
+      12 ./java/pair/IPair.java
+      42 ./java/pair/Pair.java
+    2675 total
 ```
+
+#### Join
+Heap space.

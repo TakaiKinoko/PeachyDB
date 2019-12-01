@@ -1,0 +1,35 @@
+Heap
+ garbage-first heap   total 528384K, used 67570K [0x0000000600000000, 0x0000000800000000)
+  region size 2048K, 34 young (69632K), 9 survivors (18432K)
+ Metaspace       used 1291K, capacity 4733K, committed 4864K, reserved 1056768K
+  class space    used 107K, capacity 449K, committed 512K, reserved 1048576K
+
+
+Heap
+ garbage-first heap   total 528384K, used 122866K [0x0000000600000000, 0x0000000800000000)
+  region size 2048K, 61 young (124928K), 9 survivors (18432K)
+ Metaspace       used 1438K, capacity 4733K, committed 4864K, reserved 1056768K
+  class space    used 119K, capacity 449K, committed 512K, reserved 1048576K
+
+
+
+Heap
+ garbage-first heap   total 4321280K, used 1053065K [0x0000000600000000, 0x0000000800000000)
+  region size 2048K, 111 young (227328K), 28 survivors (57344K)
+ Metaspace       used 1449K, capacity 4733K, committed 4864K, reserved 1056768K
+  class space    used 121K, capacity 449K, committed 512K, reserved 1048576K
+
+======= BEFORE EVALUATING =
+Heap
+ garbage-first heap   total 7630848K, used 2622921K [0x0000000600000000, 0x0000000800000000)
+  region size 2048K, 81 young (165888K), 24 survivors (49152K)
+ Metaspace       used 1564K, capacity 4733K, committed 4864K, reserved 1056768K
+  class space    used 143K, capacity 449K, committed 512K, reserved 1048576K
+
+
+======= DONE
+ Heap
+  garbage-first heap   total 8052736K, used 3983096K [0x0000000600000000, 0x0000000800000000)
+   region size 2048K, 229 young (468992K), 34 survivors (69632K)
+  Metaspace       used 1580K, capacity 4733K, committed 4864K, reserved 1056768K
+   class space    used 143K, capacity 449K, committed 512K, reserved 1048576K

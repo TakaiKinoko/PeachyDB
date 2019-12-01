@@ -2,17 +2,17 @@ package util;
 
 import java.util.Comparator;
 
-public class GroupKey implements Comparable<GroupKey>, Comparator<GroupKey>{
+public class GroupKey<V> implements Comparable<GroupKey>, Comparator<GroupKey>{
     /**
      * Customized class for composite HashMap key
      * */
-    private Object[] key;
+    private V[] key;
 
-    public GroupKey(Object[] key) {
+    public GroupKey(V[] key) {
         this.key = key;
     }
 
-    public Object[] getKey(){
+    public V[] getKey(){
         return this.key;
     }
 
@@ -47,7 +47,7 @@ public class GroupKey implements Comparable<GroupKey>, Comparator<GroupKey>{
          *          is less than, equal to, or greater than the supplied GroupKey object.
          **/
         //System.out.println("INSIDE COMPARETO" + this.getKey()[0] + " v.s. " + anotherKey.getKey()[0]);
-        if(this.key[0] instanceof Integer) {
+        if(this.key[0] instanceof Integer || this.key[0] instanceof String) {
             Integer res = Integer.parseInt(String.valueOf(this.key[0])) - Integer.parseInt(String.valueOf(anotherKey.getKey()[0]));
             //return Integer.parseInt(String.valueOf(this.key[0])) - Integer.parseInt(String.valueOf(anotherKey.getKey()[0]));
             //System.out.println(res);
@@ -59,7 +59,7 @@ public class GroupKey implements Comparable<GroupKey>, Comparator<GroupKey>{
 
     @Override
     public int compare(GroupKey k1, GroupKey k2){
-        if(k1.key[0] instanceof Integer) {
+        if(k1.key[0] instanceof Integer || k1.key[0] instanceof String) {
             Integer res = Integer.parseInt(String.valueOf(k1.key[0])) - Integer.parseInt(String.valueOf(k2.getKey()[0]));
             //return Integer.parseInt(String.valueOf(this.key[0])) - Integer.parseInt(String.valueOf(anotherKey.getKey()[0]));
             //System.out.println(res);
