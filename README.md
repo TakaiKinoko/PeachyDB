@@ -1,5 +1,22 @@
 # peachyDB: A miniature relational database with order
 
+## Compile and Run with Maven
+
+#### download repo
+```$ git clone https://github.com/TakaiKinoko/PeachyDB.git```
+
+#### compile
+```
+$ cd PeachyDB
+$ mvn compile 
+```
+
+#### build jar
+```$ mvn package```
+
+#### run 
+```$ java -cp target/peachyDB-1.0.jar Entry```
+
 ## Features:
 
 ### In Order
