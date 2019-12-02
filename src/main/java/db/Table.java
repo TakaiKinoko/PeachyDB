@@ -76,6 +76,8 @@ public class Table {
 
     // UPDATED
     public void printData() {
+        PrettyPrinter.prettyPrintTableToStdOut(this, true); //TODO
+        /*
         if(index == null || index.size() != getTableSize()){
             index = new HashMap<>();
             for(int i = 0; i < getTableSize(); i++)
@@ -99,7 +101,7 @@ public class Table {
             }
             System.out.println(entry.toString());
         }
-        System.out.println("Number of entries inserted is: " + getTableSize() + "\n\n");
+        System.out.println("Number of entries inserted is: " + getTableSize() + "\n\n");  */
     }
 
     public void updateIndex(HashMap<Integer, Integer> index){
@@ -113,7 +115,7 @@ public class Table {
          *             containing heterogenous data which is either string or int
          * @return true if no error, false otherwise
          * */
-        try{
+        ///try{
             // iterate over data columns (rows of 2D array data)
             for(int i = 0; i < entry.length; i++)
                 data[i][entry_num] = entry[i];
@@ -121,10 +123,10 @@ public class Table {
             entry_num++;
             // TODO manage indices
             return true;
-        }catch(Exception e) {
-            System.out.println("Exception while inserting data into the table.");
-            return false;
-        }
+        //}catch(Exception e) {
+       //     System.out.println("Exception while inserting data into the table.");
+        //    return false;
+       // }
     }
 
     public void updateData(String[][] data){

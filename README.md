@@ -99,7 +99,9 @@ Based off groupby
     * syntax: ```showtables()``` 
 * show schemas:
     * syntax: ```showschema()```
-
+* quit: 
+    * syntax:  ```quit``` or   ```Quit```
+    
 #### Total Lines of code
 ``` find . -name '*.java' | xargs wc -l```
 ```

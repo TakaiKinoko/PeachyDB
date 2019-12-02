@@ -13,43 +13,40 @@ public class Aggregate {
 
     // UPDATED
     public void avg(String s) {
-        try {
-            String toVar = Parser.get_toTable(s);
-            String btwParens = Parser.get_conditions(s);
-            String[] col;
-            Double res;
-
-            col = Utils.getCol(btwParens, db);
-            //db.getTable(fromTable).getData().get(col);
-            res = Utils.calculateAverage(col);
-
-            Variable var = new Variable(toVar, res);
-            db.newVariable(var);
-
-            System.out.printf("%s: %.4f\n", toVar, (double)var.getValue());
-
-        } catch (Exception e) {
-            System.out.println("Exception ");
-        }
+        makeAggTable(s, "avg");
     }
 
     // UPDATED
     public void sum(String s) {
+        makeAggTable(s, "sum");
+    }
+
+    private void makeAggTable(String s, String op){
         try {
-            String toVar = Parser.get_toTable(s);
+            String toTable = Parser.get_toTable(s);
+            db.newEmptyTable(toTable);
+            Table target = db.getTable(toTable);
+
             String btwParens = Parser.get_conditions(s);
-            Table fromTable;
-            String[] col;
-            Double res;
+            String[] col =  Utils.getCol(btwParens, db);
 
-            col = Utils.getCol(btwParens, db);
-            //db.getTable(fromTable).getData().get(col);
-            res = Utils.calculateSum(col);
+            target.setSchema(new String[]{op + "_" + Utils.getNthArg(btwParens, 2)});
 
-            Variable var = new Variable(toVar, res);
-            db.newVariable(var);
-            //System.out.printf("%s: %.4f\n", toVar, res);
-            System.out.printf("%s: %.4f\n", toVar, (Double)var.getValue());
+            String[][] data = new String[1][1];
+            switch(op){
+                case "sum":
+                    data[0][0] = String.valueOf(Utils.calculateSum(col));
+                    break;
+                case "count":
+                    data[0][0] = String.valueOf(col.length);
+                    break;
+                case "avg":
+                    data[0][0] = String.valueOf(Utils.calculateAverage(col));
+                    break;
+            }
+
+            target.updateData(data);
+            target.printData();
 
         } catch (Exception e) {
             System.out.println("Exception.");
@@ -58,22 +55,7 @@ public class Aggregate {
 
     // UPDATED
     public void count(String s) {
-        try {
-            String toVar = Parser.get_toTable(s);
-            String btwParens = Parser.get_conditions(s);
-            String[] col;
-            int res;
-
-            col = Utils.getCol(btwParens, db);
-            res = col.length;
-
-            Variable var = new Variable(toVar, res);
-            db.newVariable(var);
-            //System.out.printf("%s: %.4f\n", toVar, res);
-            System.out.printf("%s: %d\n", toVar, (Integer)var.getValue());
-        } catch (Exception e) {
-            System.out.println("Exception.");
-        }
+        makeAggTable(s, "count");
     }
 
 }

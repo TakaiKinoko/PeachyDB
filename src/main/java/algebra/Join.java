@@ -74,6 +74,7 @@ public class Join {
 
         // TODO COPY dynamic table to tables!!!!!
         target.makeStatic(db);
+        db.getTable(target.name).printData(); // print static table
     }
 
     class Conditions {
@@ -238,7 +239,8 @@ public class Join {
                 }
             }
 
-            target.printTable();
+            // TODO delete the below non-pretty printer from dynamic table
+            //target.printTable();
         }
 
         void addData(String[][] data1, String[][] data2, int colnum_1, int colnum_2, int i, int j, DynamicTable target){

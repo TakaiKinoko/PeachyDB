@@ -45,7 +45,7 @@ public class IO{
             FileWriter fw = new FileWriter(file);
             bw = new BufferedWriter(fw);
 
-            PrettyPrinter.prettyPrintTable(bw, db.getTable(table));
+            PrettyPrinter.prettyPrintTableToFile(bw, db.getTable(table), false, true);
             //bw.write(mycontent);
 
         } catch (IOException ioe) {

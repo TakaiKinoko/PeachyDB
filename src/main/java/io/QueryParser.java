@@ -7,6 +7,7 @@ import algebra.*;
 import aggregation.*;
 import index.Btree;
 import index.Hash;
+import util.PrettyPrinter;
 import util.Sort;
 
 public class QueryParser {
@@ -88,7 +89,7 @@ public class QueryParser {
         concat_p = Pattern.compile("^concat");         // 18
         */
         this.io = io;
-        patterns = new Pattern[23];
+        patterns = new Pattern[24];
         // I/O
         int i = 0;
         patterns[i++] = Pattern.compile("inputfromfile"); // 0
@@ -120,6 +121,7 @@ public class QueryParser {
         // INDEX
         patterns[i++] = Pattern.compile("^(\\s*)([H|h]ash)");  // 21
         patterns[i++] = Pattern.compile("^(\\s*)([B|b]tree)");  // 22
+        patterns[i++] = Pattern.compile("^(\\s*)([Q|q]uit)"); //23
 
         command_num = i;  // number of commands the program takes
 
@@ -241,9 +243,16 @@ public class QueryParser {
         }else if(matchers[21].find()) {
             // hash
             Hash ha = new Hash(io.db, s);
-        }else if(matchers[22].find()){
+        }else if(matchers[22].find()) {
+            // btree
             System.out.println("Btree");
             Btree bt = new Btree(io.db, s);
+        }else if(matchers[23].find()){
+            //quit
+            PrettyPrinter.printGoodbye();
+            // Terminate JVM
+            System.exit(0);
+
         }else{
             // error
             System.out.println("There's syntax error in the query.");
