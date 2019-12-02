@@ -106,32 +106,39 @@ Based off groupby
      196 ./src/main/java/aggregation/GroupAgg.java
      139 ./src/main/java/aggregation/Moving.java
       79 ./src/main/java/aggregation/Aggregate.java
-      74 ./src/main/java/util/Sort.java
-      26 ./src/main/java/util/PrettyPrinter.java
-      97 ./src/main/java/util/GroupKey.java
-     166 ./src/main/java/util/Utils.java
+      90 ./src/main/java/util/Sort.java
+      96 ./src/main/java/util/PrettyPrinter.java
+     114 ./src/main/java/util/GroupKey.java
+     130 ./src/main/java/util/Utils.java
       41 ./src/main/java/util/SortGroupKeyMap.java
-     918 ./src/main/java/hash/HashMap.java
-      73 ./src/main/java/hash/IMap.java
-     142 ./src/main/java/io/IO.java
-     249 ./src/main/java/io/QueryParser.java
-     157 ./src/main/java/parser/Parser.java
-      63 ./src/main/java/db/DynamicTable.java
-     230 ./src/main/java/db/Table.java
-     388 ./src/main/java/db/Database.java
+     181 ./src/main/java/io/IO.java
+     260 ./src/main/java/io/QueryParser.java
+     150 ./src/main/java/parser/Parser.java
+      18 ./src/main/java/btree/BTKeyValue.java
+    1020 ./src/main/java/btree/BTree.java
+      11 ./src/main/java/btree/BTIteratorIF.java
+      26 ./src/main/java/btree/BTException.java
+      61 ./src/main/java/btree/BTNode.java
+      42 ./src/main/java/btree/SimpleFileWriter.java
+      82 ./src/main/java/db/DynamicTable.java
+     225 ./src/main/java/db/Table.java
+     401 ./src/main/java/db/Database.java
       15 ./src/main/java/db/Variable.java
-      26 ./src/main/java/Entry.java
-     289 ./src/main/java/algebra/Join.java
-     276 ./src/main/java/algebra/Select.java
-      87 ./src/main/java/algebra/CartesianArray.java
-     312 ./src/main/java/algebra/JoinOld.java
+      39 ./src/main/java/index/BTTestIteratorImpl.java
+      86 ./src/main/java/index/Btree.java
+      66 ./src/main/java/index/Hash.java
+      58 ./src/main/java/index/BtreeKey.java
+      28 ./src/main/java/Entry.java
+     288 ./src/main/java/algebra/Join.java
+     444 ./src/main/java/algebra/Select.java
+      91 ./src/main/java/algebra/CartesianArray.java
+     416 ./src/main/java/algebra/JoinOld.java
       55 ./src/main/java/algebra/Project.java
       34 ./src/main/java/algebra/Concat.java
-     170 ./src/main/java/algebra/Cartesian.java
+     173 ./src/main/java/algebra/Cartesian.java
       12 ./src/main/java/pair/IPair.java
       44 ./src/main/java/pair/Pair.java
-    4358 total
-
+    5211 total
 ```
 
 #### Join
