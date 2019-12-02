@@ -2,21 +2,38 @@
 
 ## TABLE OF CONTENTS
 
-1. [SETUP](README.md##SETUP)
+1. [LIST OF QUERIES](README.md#QUERIES)
+2. [SETUP](README.md##SETUP)
     1. [compile and run with maven](README.md#compile-and-run-with-maven)
-2. [DOCUMENTATION](README.md##DOCUMENTATION)
+3. [DOCUMENTATION](README.md##DOCUMENTATION)
     1. [table naming convention](README.md#table-naming-convention)
     2. [I/O queries](README.md#I/O)
     3. [algebraic queries](README.md#algebraic)
     4. [aggregate queries](README.md#aggregate)
     5. [moving aggregate queries](README.md#moving-aggregates)
-3. [FEATURES](README.md##FEATURES)
-4. [STATISTICS](README.md##STATISTICS)
+4. [FEATURES](README.md##FEATURES)
+5. [STATISTICS](README.md##STATISTICS)
 
 ## QUERIES
 
-1. [inputfromfile]()
-
+1. [showtables](README.md#)
+1. [showschema](README.md#)
+1. [quit](README.md#)
+1. [inputfromfile](README.md#read-from-file)
+1. [outputtofile](README.md#write-table-to-file)
+1. [select](README.md#select)
+1. [project](README.md#project)
+1. [join](README.md#join)
+1. [concat](README.md#concat)
+1. [sort](README.md#sort)
+1. [count](README.md#count)
+1. [sum](README.md#sum)
+1. [avg](README.md#avg)
+1. [countgroup](README.md#countgroup)
+1. [sumgroup](README.md#sumgroup)
+1. [avggroup](README.md#avggroup)
+1. [movavg](README.md#moving-average)
+1. [movsum](README.md#moving-sum)
 
 ## SETUP
 
@@ -67,7 +84,9 @@ $ java -cp target/peachyDB-1.0.jar Entry
 ### I/O
 
 #### read from file 
+
 * syntax: ```<table_name> := inputfromfile(<filepath>)```
+
 * note: 
     1. a ```<filepath>``` must be assigned to a ```<table_name>```
     1. ```<table_name>``` format: ```[a-zA-Z]+\d*```
@@ -76,8 +95,10 @@ $ java -cp target/peachyDB-1.0.jar Entry
     1. the order of the file is preserved when read into the underlying data-structure of each table (an array-table).
 * example: ```inputfromfile(../../../input/sales1.txt)```
         
-#### outputtofile
-    
+#### write table to file
+
+
+
 ### algebraic
 
 #### select
@@ -125,9 +146,9 @@ based on groupby. treemap. sorted by the first groupby condition
 
 ### moving aggregates
 
-#### movavg
+#### moving average
 
-#### movsum
+#### moving sum
 
 Based off groupby
 
@@ -135,13 +156,13 @@ Based off groupby
 * Java TreeMap
 
 
-#### utility
+### utility
 
-##### quit: 
+#### quit 
 
 * syntax:  ```quit``` or   ```Quit```
 
-##### show tables: 
+#### show tables
 
 * syntax: ```showtables()``` 
 
@@ -172,11 +193,11 @@ Based off groupby
 +-----------+----------+
 ```
 
-##### show schemas:
+#### show schemas
 
 * syntax: ```showschema()```
 
-* sample output: 
+* sample output:  # TODO USE PICTURE
 
 ```$xslt
 +-----------+-----------------------------------------------------------------------------------------------------------------------------------------------------+
