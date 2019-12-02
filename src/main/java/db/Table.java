@@ -1,5 +1,7 @@
 package db;
 
+import btree.BTree;
+import index.BtreeKey;
 import util.*;
 
 import java.util.*;
@@ -12,6 +14,9 @@ public class Table {
     //private ArrayList<ArrayList> data;   // pointer to DATA store  index <-> [values]
     private String[][] data;
     //TODO FIX INDEX
+    HashMap<Integer, Integer> index;  // sorted ordering mapped to it's physical index
+    public HashMap<String, HashMap<String, List<Integer>>> hash_indices;  // column name mapped to the hash index built on it
+    public HashMap<String, BTree<BtreeKey, List<Integer>>> btree_indices;
     //private List<IIndex> indices;
     public String name;  // name is the string before ":=" in a command
     private Map<String, Integer> schema; // map column names to its index
@@ -28,13 +33,15 @@ public class Table {
         //data = new ArrayList();
         //data.add(new ArrayList()); // the only column added when initializing table is the index column
         this.name = name;
-        schema = new HashMap<>();
+        this.schema = new HashMap<>();
+        this.index = new HashMap<>();
     }
 
     // ADDED
     public Table(String name){
         this.name = name;
         schema = new HashMap<>();
+        this.index = new HashMap<>();
     }
 
     // ADDED -- sample use: JoinOld.java line 519
@@ -59,8 +66,21 @@ public class Table {
         return data[0].length;
     }
 
+
+    public void printEntry(Integer ind){
+        for(int i = 0; i < schema.size(); i++){
+            System.out.print(data[i][ind] + "\t");
+        }
+        System.out.println();
+    }
+
     // UPDATED
     public void printData() {
+        if(index == null || index.size() != getTableSize()){
+            index = new HashMap<>();
+            for(int i = 0; i < getTableSize(); i++)
+                index.put(i, i);
+        }
 
         // TODO pretty printer
         System.out.println("\n\n========================\n" +
@@ -68,17 +88,22 @@ public class Table {
                          "\n========================");
         System.out.println(schemaToString());
         //System.out.println("FINE AFTER PRINTING SCHEMA");
-        for(int n = 1; n < getTableSize(); n++){
-            //int ind = (int)index;
+        // TODO USE INDEX
+        for(int n = 0; n < getTableSize(); n++){
+            int ind = index.get(n);
             //System.out.println("Index: " + ind);
             StringBuilder entry = new StringBuilder();
             //entry.append(ind+": ");
             for(int m = 0; m < data.length; m++){
-                entry.append(data[m][n] + "\t");
+                entry.append(data[m][ind] + "\t");
             }
             System.out.println(entry.toString());
         }
         System.out.println("Number of entries inserted is: " + getTableSize() + "\n\n");
+    }
+
+    public void updateIndex(HashMap<Integer, Integer> index){
+        this.index = index;
     }
 
     // UPDATED
@@ -92,6 +117,7 @@ public class Table {
             // iterate over data columns (rows of 2D array data)
             for(int i = 0; i < entry.length; i++)
                 data[i][entry_num] = entry[i];
+            index.put(entry_num, entry_num);
             entry_num++;
             // TODO manage indices
             return true;
@@ -101,31 +127,10 @@ public class Table {
         }
     }
 
-    /*
-    public boolean addColumn(ArrayList col){
-        try{
-            this.data.add(col);
-            return true;
-        }catch(Exception e){
-            System.out.println("Exception while adding column.");
-            return false;
-        }
+    public void updateData(String[][] data){
+        this.data = data;
     }
 
-    public boolean updateColumn(int col, ArrayList newcol){
-        /**
-         * switch off the @param col'th column of the data with the @param newcol
-         * */
-    /*
-        try{
-            data.remove(col);
-            data.add(col, newcol);
-            return true;
-        }catch(Exception e){
-            System.out.println("Exception while updating the " + col + "th column.");
-            return false;
-        }
-    } */
 
     // UPDATED
     public boolean setSchema(String[] cols) {
@@ -159,8 +164,7 @@ public class Table {
          * Note that this function doesn't add new columns to the table as setSchema() does
          * */
         try {
-            this.schema = schema;
-            schema = Utils.sortMapByValue(schema);
+            this.schema = Utils.sortMapByValue(schema);
             return true;
         }catch(Exception e){
             System.out.println("Exception while updating schema for the target table.");
@@ -218,8 +222,4 @@ public class Table {
         }
     }
 
-    /*
-    public List<IIndex> getIndices() {
-        return indices;
-    }*/
 }

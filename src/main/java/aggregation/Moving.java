@@ -69,7 +69,7 @@ public class Moving {
             // TODO newTable
             db.newEmptyTable(toTable);
 
-            System.out.println("Table created.");
+            System.out.println("StaticTable created.");
             // TODO schema
             String[] cols = new String[fromTable.getSchema().size()+1];
             String[] projects = new String[cols.length];

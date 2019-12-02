@@ -116,22 +116,29 @@ public class GroupAgg {
         //System.out.println("~~~" + gb_cond.length + "~~~");
         for(int i = 0; i < groupby.length; i++){
             gb_cond[i] = tb.getSchema().get(groupby[i]);
-            //System.out.println("..." + gb_cond[i] + "...");
+            System.out.println("..." + gb_cond[i] + "...");
         }
 
         //String[] target_col = data[target];
 
         int ind, cnt;
-        try {
+        //try {
             for (ind = 0; ind < table_size; ind++) {
                 //ind = (Integer)i;  // get row index
+                /*System.out.println(groupby.length);
+                for(int i : gb_cond)
+                    System.out.print(data[i][ind]);
+                System.out.println();
+                */
+
                 String[] comp = new String[groupby.length];
                 cnt = 0;
                 for (int col : gb_cond) {
+                    System.out.println(data[col][ind]);
                     comp[cnt] = data[col][ind];
                     cnt++;
                 }
-                GroupKey<String> key = new GroupKey(comp);
+                GroupKey key = new GroupKey(comp);
                 ArrayList box = res.getOrDefault(key, new ArrayList());
                 box.add(ind);
                 res.put(key, box);
@@ -143,10 +150,10 @@ public class GroupAgg {
                 System.out.println(k.toString());
                 System.out.println(res.get(k));
             }*/
-        }catch (Exception e){
-            System.out.println("Couldn't read from target table.");
-            return res;
-        }
+       // }catch (Exception e){
+       //     System.out.println("Couldn't read from target table.");
+       //     return res;
+       // }
 
         return res;
     }
@@ -161,20 +168,20 @@ public class GroupAgg {
             String[] inside = btwParens.split(",");
             Table fromTable = db.getTable(inside[0].trim());
             Integer target = fromTable.getSchema().get(inside[1].trim());
-            System.out.println("Target: " + target);
+            //System.out.println("Target: " + target);
             String[] groupby = new String[inside.length - 2];
 
-            System.out.print("Group columns ");
+            //System.out.print("Group columns ");
             for(int i = 2; i < inside.length; i++) {
                 groupby[i - 2] = inside[i].trim();
-                System.out.print(" " + groupby[i-2]);
+                //System.out.print(" " + groupby[i-2]);
             }
-            System.out.println();
+            //System.out.println();
             res = groupby(fromTable, target, groupby, Map_type.TREE);
 
             return res;
         }catch (Exception e) {
-            System.out.println("Exception.");
+            System.out.println("Exception when parsing grouping condition.");
             return null;
         }
     }

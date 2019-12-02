@@ -70,7 +70,10 @@ public class Join {
     public void join(){
         Conditions COND = new Conditions(conditions, fromTables);
         COND.evaluate(target);
-        System.out.printf("\nTime cost: %.4f seconds\n\n", ((double)System.currentTimeMillis() - (double)START)/1000);
+        //System.out.printf("\nTime cost: %.4f seconds\n\n", ((double)System.currentTimeMillis() - (double)START)/1000);
+
+        // TODO COPY dynamic table to tables!!!!!
+        target.makeStatic(db);
     }
 
     class Conditions {

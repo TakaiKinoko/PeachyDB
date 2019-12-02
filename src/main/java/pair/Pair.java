@@ -1,5 +1,7 @@
 package pair;
 
+import pair.IPair;
+
 public class Pair<K,V> implements IPair<K,V> {
     K key;
     V val;

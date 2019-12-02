@@ -84,8 +84,15 @@ names have the format of ```<table_name>_<column_name>```
     * - movsum
 
 #### others
-    * - sort
-    * - concat
+
+##### sort 
+
+Based off groupby
+
+* customized comparable class GroupKey, 
+* Java TreeMap
+
+##### concat
 
 #### utility
 * show tables: 
@@ -96,27 +103,35 @@ names have the format of ```<table_name>_<column_name>```
 #### Total Lines of code
 ``` find . -name '*.java' | xargs wc -l```
 ```
-     173 ./java/aggregation/GroupAgg.java
-     118 ./java/aggregation/Moving.java
-      78 ./java/aggregation/Aggregate.java
-      26 ./java/util/PrettyPrinter.java
-      82 ./java/util/GroupKey.java
-     105 ./java/util/Utils.java
-      41 ./java/util/SortGroupKeyMap.java
-     132 ./java/io/IO.java
-     209 ./java/io/QueryParser.java
-     157 ./java/parser/Parser.java
-     195 ./java/db/Table.java
-     320 ./java/db/Database.java
-      15 ./java/db/Variable.java
-      24 ./java/Entry.java
-     559 ./java/algebra/Join.java
-     298 ./java/algebra/Select.java
-      55 ./java/algebra/Project.java
-      34 ./java/algebra/Concat.java
-      12 ./java/pair/IPair.java
-      42 ./java/pair/Pair.java
-    2675 total
+     196 ./src/main/java/aggregation/GroupAgg.java
+     139 ./src/main/java/aggregation/Moving.java
+      79 ./src/main/java/aggregation/Aggregate.java
+      74 ./src/main/java/util/Sort.java
+      26 ./src/main/java/util/PrettyPrinter.java
+      97 ./src/main/java/util/GroupKey.java
+     166 ./src/main/java/util/Utils.java
+      41 ./src/main/java/util/SortGroupKeyMap.java
+     918 ./src/main/java/hash/HashMap.java
+      73 ./src/main/java/hash/IMap.java
+     142 ./src/main/java/io/IO.java
+     249 ./src/main/java/io/QueryParser.java
+     157 ./src/main/java/parser/Parser.java
+      63 ./src/main/java/db/DynamicTable.java
+     230 ./src/main/java/db/Table.java
+     388 ./src/main/java/db/Database.java
+      15 ./src/main/java/db/Variable.java
+      26 ./src/main/java/Entry.java
+     289 ./src/main/java/algebra/Join.java
+     276 ./src/main/java/algebra/Select.java
+      87 ./src/main/java/algebra/CartesianArray.java
+     312 ./src/main/java/algebra/JoinOld.java
+      55 ./src/main/java/algebra/Project.java
+      34 ./src/main/java/algebra/Concat.java
+     170 ./src/main/java/algebra/Cartesian.java
+      12 ./src/main/java/pair/IPair.java
+      44 ./src/main/java/pair/Pair.java
+    4358 total
+
 ```
 
 #### Join

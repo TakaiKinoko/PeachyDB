@@ -1,12 +1,13 @@
 package algebra;
 
+import btree.BTree;
+import index.BTTestIteratorImpl;
+import index.BtreeKey;
 import parser.*;
 import db.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
 
 public class Select {
     Database db;
@@ -58,7 +59,7 @@ public class Select {
     }
 
     // UPDATED
-    public static Table evaluateSelect(String to_table, String cond, Table from_table, Database db) {
+    public static Table evaluateSelect(String to_table, String cond, Table from_table, Database db) throws IOException{
         /**
          * used with "select" query, called from algebra.Select.
          * @param to_table: name of the resulting table
@@ -199,7 +200,7 @@ public class Select {
     }
 
     // UPDATED
-    public static List<Integer> evaluate_arith(String s, Map<String, Integer> schema, Table table){
+    public static List<Integer> evaluate_arith(String s, Map<String, Integer> schema, Table table) throws IOException {
         /**
          * @return the indices of the entries selected
          * */
@@ -207,101 +208,237 @@ public class Select {
         String[] qs = Parser.arith_match(s);
         String[] col;
         String constraint;
+        boolean reverse;
 
         // TODO delete
-        System.out.println("\nEvaluating arithmetic expression");
+        //System.out.println("\nEvaluating arithmetic expression without index.");
+        //System.out.println(qs[0]);
+        //System.out.println(qs[1]);
+        //System.out.println(qs[2]);
+        //for(String k: schema.keySet())
+        //    System.out.println(k);
+        if (schema.keySet().contains(qs[0])) {
+            col = table.getData()[schema.get(qs[0])];   // column is on the left of the operator
+            constraint = qs[2];
+            reverse = false;
+        }
+        else {
+            col = table.getData()[schema.get(qs[2])];   // column is on the right of the operator
+            constraint = qs[0];
+            reverse = true;
+        }
+
+        // if previously have built a hash index on this column:
+        if(table.hash_indices != null && table.hash_indices.get(qs[0].trim()) != null){
+            System.out.println("Column " + qs[0] + " has been hash indexed.");
+            return select_from_hash(qs[0], constraint, qs[1], reverse, table);
+        }
+
+        // if previously have built a btree index on this column:
+        if(table.btree_indices != null && table.btree_indices.get(qs[0].trim()) != null){
+            System.out.println("Column " + qs[0] + " has been btree indexed.");
+            return select_from_btree(qs[0], constraint, qs[1], reverse, table);
+        }
+
+        // decide what operation it is
+        //System.out.println("OPERATOR: "+ qs[1]);
+        switch(qs[1]){
+            case ">":
+                try {
+                    for (int i = 0; i < col.length; i++) {
+                        if (!reverse && Integer.valueOf(col[i]) > Integer.valueOf(constraint))
+                            res.add(i);
+                        else if(reverse && Integer.valueOf(col[i]) < Integer.valueOf(constraint))
+                            res.add(i);
+                    }
+                }catch(Exception e){
+                    System.out.println("Operand error.");
+                }
+                break;
+            case "<":
+                try {
+                    for (int i = 0; i < col.length; i++) {
+                        if (!reverse && Integer.valueOf(col[i]) < Integer.valueOf(constraint))
+                            res.add(i);
+                        else if (reverse && Integer.valueOf(col[i]) > Integer.valueOf(constraint))
+                            res.add(i);
+                    }
+                }catch(Exception e){
+                    System.out.println("Operand error.");
+                }
+                break;
+            case ">=":
+                try {
+                    for (int i = 0; i < col.length; i++) {
+                        if (!reverse && Integer.valueOf(col[i]) >= Integer.valueOf(constraint))
+                            res.add(i);
+                        else if(reverse && Integer.valueOf(col[i]) <= Integer.valueOf(constraint))
+                            res.add(i);
+                    }
+                }catch(Exception e){
+                    System.out.println("Operand error.");
+                }
+                break;
+            case "<=":
+                try {
+                    for (int i = 0; i < col.length; i++) {
+                        if (!reverse && Integer.valueOf(col[i]) <= Integer.valueOf(constraint))
+                            res.add(i);
+                        else if(reverse && Integer.valueOf(col[i]) >= Integer.valueOf(constraint))
+                            res.add(i);
+                    }
+                }catch(Exception e){
+                    System.out.println("Operand error.");
+                }
+                break;
+            case "=":
+                //System.out.println("equallll");
+                try {
+                    for (int i = 0; i < col.length; i++) {
+                        //System.out.println(col.get(i)  + " " + String.valueOf(col.get(i)));
+                        if (col[i].equals(constraint))
+                            res.add(i);
+                    }
+                }catch(Exception e){
+                    System.out.println("Operand error.");
+                }
+                break;
+            case "!=":
+                try {
+                    for (int i = 0; i < col.length; i++) {
+                        if (!col[i].equals(constraint))
+                            res.add(i);
+                    }
+                }catch(Exception e){
+                    System.out.println("Operand error.");
+                }
+                break;
+            default:
+                System.out.println("Unknown operator.");
+                break;
+        }
+        return res;
+    }
+
+    private static List<Integer> select_from_hash(String col, String constraint, String op,  Boolean reverse, Table table){
+        HashMap<String, List<Integer>> index;
         try {
-            System.out.println(qs[0]);
-            System.out.println(qs[1]);
-            System.out.println(qs[2]);
-            for(String k: schema.keySet())
-                System.out.println(k);
-            if (schema.keySet().contains(qs[0])) {
-
-                col = table.getData()[schema.get(qs[0])];   // column is on the left of the operator
-                constraint = qs[2];
-            }
-            else {
-                col = table.getData()[schema.get(qs[2])];   // column is on the right of the operator
-                constraint = qs[0];
-            }
-
-            // decide what operation it is
-            //System.out.println("OPERATOR: "+ qs[1]);
-            switch(qs[1]){
-                case ">":
-                    try {
-                        for (int i = 0; i < col.length; i++) {
-                            if (Integer.valueOf(col[i]) > Integer.valueOf(constraint))
-                                res.add(i);
-                        }
-                    }catch(Exception e){
-                        System.out.println("Operand error.");
-                    }
-                    break;
-                case "<":
-                    try {
-                        for (int i = 0; i < col.length; i++) {
-                            if (Integer.valueOf(col[i]) < Integer.valueOf(constraint))
-                                res.add(i);
-                        }
-                    }catch(Exception e){
-                        System.out.println("Operand error.");
-                    }
-                    break;
-                case ">=":
-                    try {
-                        for (int i = 0; i < col.length; i++) {
-                            if (Integer.valueOf(col[i]) >= Integer.valueOf(constraint))
-                                res.add(i);
-                        }
-                    }catch(Exception e){
-                        System.out.println("Operand error.");
-                    }
-                    break;
-                case "<=":
-                    try {
-                        for (int i = 0; i < col.length; i++) {
-                            if (Integer.valueOf(col[i]) <= Integer.valueOf(constraint))
-                                res.add(i);
-                        }
-                    }catch(Exception e){
-                        System.out.println("Operand error.");
-                    }
-                    break;
-                case "=":
-                    //System.out.println("equallll");
-                    try {
-                        for (int i = 0; i < col.length; i++) {
-                            //System.out.println(col.get(i)  + " " + String.valueOf(col.get(i)));
-                            if (col[i].equals(constraint))
-                                res.add(i);
-                        }
-                    }catch(Exception e){
-                        System.out.println("Operand error.");
-                    }
-                    break;
-                case "!=":
-                    try {
-                        for (int i = 0; i < col.length; i++) {
-                            if (!col[i].equals(constraint))
-                                res.add(i);
-                        }
-                    }catch(Exception e){
-                        System.out.println("Operand error.");
-                    }
-                    break;
-                default:
-                    System.out.println("Unknown operator.");
-                    break;
-            }
-            return res;
-
-        }catch(Exception e) {
-            System.out.println("Wrong select condition.");
+            index = table.hash_indices.get(col);
+        }catch(NullPointerException n){
+            System.out.println("Hash index don't exist.");
             return null;
+        }
+
+        List<Integer> res = new ArrayList<>();
+
+        switch(op){
+            case "=":
+                return index.get(constraint);
+            case "!=":
+                for(String k: index.keySet()){
+                    if(!k.equals(constraint))
+                        res.addAll(index.get(k));
+                }
+                return res;
+            case ">":
+                for(String k: index.keySet()){
+                    if(reverse && Integer.valueOf(k) < Integer.valueOf(constraint))
+                        res.addAll(index.get(k));
+                    else if(!reverse && Integer.valueOf(k) > Integer.valueOf(constraint))
+                        res.addAll(index.get(k));
+                }
+                return res;
+            case "<":
+                for(String k: index.keySet()){
+                    if(reverse && Integer.valueOf(k) > Integer.valueOf(constraint))
+                        res.addAll(index.get(k));
+                    else if(!reverse && Integer.valueOf(k) < Integer.valueOf(constraint))
+                        res.addAll(index.get(k));
+                }
+                return res;
+            case ">=":
+                for(String k: index.keySet()){
+                    if(reverse && Integer.valueOf(k) <= Integer.valueOf(constraint))
+                        res.addAll(index.get(k));
+                    else if(!reverse && Integer.valueOf(k) >= Integer.valueOf(constraint))
+                        res.addAll(index.get(k));
+                }
+                return res;
+            case "<=":
+                for(String k: index.keySet()){
+                    if(reverse && Integer.valueOf(k) >= Integer.valueOf(constraint))
+                        res.addAll(index.get(k));
+                    else if(!reverse && Integer.valueOf(k) <= Integer.valueOf(constraint))
+                        res.addAll(index.get(k));
+                }
+                return res;
+            default:
+                System.out.println("Unrecognized operator.");
+                return res;
         }
 
     }
 
+    private static List<Integer> select_from_btree
+            (String col, String constraint, String op,  Boolean reverse, Table table) throws IOException {
+        BTree<BtreeKey, List<Integer>> index;
+        try {
+            index = table.btree_indices.get(col);
+        }catch(NullPointerException n){
+            System.out.println("Btree index does't exist.");
+            return null;
+        }
+
+        List<Integer> res = new ArrayList<>();
+        BTTestIteratorImpl<BtreeKey, List<Integer>> iter = new BTTestIteratorImpl<>();
+        List<BtreeKey> keySet = index.getKeySet(iter);
+        BtreeKey constr = new BtreeKey(constraint);
+
+        switch(op){
+            case "=":
+                return index.search(new BtreeKey(constraint));
+            case "!=":
+                for(BtreeKey k: keySet){
+                    if(!k.equals(constraint))
+                        res.addAll(index.search(k));
+                }
+                return res;
+            case ">":
+                for(BtreeKey k: keySet){
+                    if(reverse && k.compareTo(constr) < 0)
+                        res.addAll(index.search(k));
+                    else if(!reverse && k.compareTo(constr) > 0)
+                        res.addAll(index.search(k));
+                }
+                return res;
+            case "<":
+                for(BtreeKey k: keySet){
+                    if(reverse && k.compareTo(constr) > 0)
+                        res.addAll(index.search(k));
+                    else if(!reverse && k.compareTo(constr) < 0)
+                        res.addAll(index.search(k));
+                }
+                return res;
+            case ">=":
+                for(BtreeKey k: keySet){
+                    if(reverse && k.compareTo(constr) <= 0)
+                        res.addAll(index.search(k));
+                    else if(!reverse && k.compareTo(constr) >= 0)
+                        res.addAll(index.search(k));
+                }
+                return res;
+            case "<=":
+                for(BtreeKey k: keySet){
+                    if(reverse && k.compareTo(constr) >= 0)
+                        res.addAll(index.search(k));
+                    else if(!reverse && k.compareTo(constr) <= 0)
+                        res.addAll(index.search(k));
+                }
+                return res;
+            default:
+                System.out.println("Unrecognized operator.");
+                return res;
+        }
+
+    }
 }

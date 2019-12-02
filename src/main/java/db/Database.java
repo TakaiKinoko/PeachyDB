@@ -16,7 +16,7 @@ public class Database {
      * */
 
     private Map<String, Table> tables;  // name table pair
-    private Map<String, DynamicTable> dynamicTables;
+    public Map<String, DynamicTable> dynamicTables;
     //private String[] names;         // keep track of the names of tables
     //private String currentTable;   // keep track of the current table being accessed.
     private Map<String, Variable> variables;  // store results of e.g. avg, count...

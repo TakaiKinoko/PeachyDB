@@ -46,19 +46,27 @@ public class GroupKey<V> implements Comparable<GroupKey>, Comparator<GroupKey>{
          * @return  A negative integer, zero, or a positive integer as this key
          *          is less than, equal to, or greater than the supplied GroupKey object.
          **/
-        //System.out.println("INSIDE COMPARETO" + this.getKey()[0] + " v.s. " + anotherKey.getKey()[0]);
-        if(this.key[0] instanceof Integer || this.key[0] instanceof String) {
-            Integer res = Integer.parseInt(String.valueOf(this.key[0])) - Integer.parseInt(String.valueOf(anotherKey.getKey()[0]));
-            //return Integer.parseInt(String.valueOf(this.key[0])) - Integer.parseInt(String.valueOf(anotherKey.getKey()[0]));
-            //System.out.println(res);
-            return res;
+        for(int i = 0; i < this.key.length; i++){
+            int res = compareSingleObj(this.key[i], anotherKey.key[i]);
+            if(res != 0)
+                return res;
         }
-        return String.valueOf(this.key[0]).compareTo(String.valueOf(anotherKey.getKey()[0]));
+        return 0;
     }
 
 
     @Override
     public int compare(GroupKey k1, GroupKey k2){
+        /**
+         * compare recursively
+         * */
+        for(int i = 0; i < k1.key.length; i++){
+            int res = compareSingleObj(k1.key[i], k2.key[i]);
+            if(res != 0)
+                return res;
+        }
+        return 0;
+        /*
         if(k1.key[0] instanceof Integer || k1.key[0] instanceof String) {
             Integer res = Integer.parseInt(String.valueOf(k1.key[0])) - Integer.parseInt(String.valueOf(k2.getKey()[0]));
             //return Integer.parseInt(String.valueOf(this.key[0])) - Integer.parseInt(String.valueOf(anotherKey.getKey()[0]));
@@ -69,7 +77,7 @@ public class GroupKey<V> implements Comparable<GroupKey>, Comparator<GroupKey>{
                 return 0;
             return 1;
         }
-        return String.valueOf(k1.key[0]).compareTo(String.valueOf(k2.getKey()[0]));
+        return String.valueOf(k1.key[0]).compareTo(String.valueOf(k2.getKey()[0]));  */
     }
 
     @Override
@@ -78,5 +86,29 @@ public class GroupKey<V> implements Comparable<GroupKey>, Comparator<GroupKey>{
         for(Object k: key)
             res += k + " ";
         return res;
+    }
+
+    private int compareSingleObj(Object v1, Object v2){
+        if(isNumeric(String.valueOf(v1))){
+            Double res = Double.parseDouble(String.valueOf(v1)) - Double.parseDouble(String.valueOf(v2));
+            if(res < 0)
+                return -1;
+            if(res == 0)
+                return 0;
+            else return 1;
+        }else
+            return String.valueOf(v1).compareTo(String.valueOf(v2));
+    }
+
+    private static boolean isNumeric(String strNum) {
+        if (strNum == null) {
+            return false;
+        }
+        try {
+            double d = Double.parseDouble(strNum);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+        return true;
     }
 }

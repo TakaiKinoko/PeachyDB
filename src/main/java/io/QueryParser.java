@@ -5,6 +5,9 @@ import java.util.regex.Pattern;
 
 import algebra.*;
 import aggregation.*;
+import index.Btree;
+import index.Hash;
+import util.Sort;
 
 public class QueryParser {
 
@@ -54,6 +57,8 @@ public class QueryParser {
     int command_num;
     IO io; //
 
+    private long START;
+
     public QueryParser(IO io){
         /**
         // I/O
@@ -83,7 +88,7 @@ public class QueryParser {
         concat_p = Pattern.compile("^concat");         // 18
         */
         this.io = io;
-        patterns = new Pattern[21];
+        patterns = new Pattern[23];
         // I/O
         int i = 0;
         patterns[i++] = Pattern.compile("inputfromfile"); // 0
@@ -111,7 +116,10 @@ public class QueryParser {
         patterns[i++] = Pattern.compile("sort");        // 17
         patterns[i++] = Pattern.compile("concat");      // 18
         patterns[i++] = Pattern.compile("showtables");  // 19
-        patterns[i++] = Pattern.compile("showschema");  // 19
+        patterns[i++] = Pattern.compile("showschema");  // 20
+        // INDEX
+        patterns[i++] = Pattern.compile("^(\\s*)([H|h]ash)");  // 21
+        patterns[i++] = Pattern.compile("^(\\s*)([B|b]tree)");  // 22
 
         command_num = i;  // number of commands the program takes
 
@@ -128,12 +136,15 @@ public class QueryParser {
             matchers[i] = patterns[i].matcher(s);
 
         if(matchers[0].find()){
-            //TODO delete test print
-            //System.out.println("Command: inputfromfile");
+            startTimer();
             io.inputfromfile(s);
+            endTimer();
         }else if(matchers[1].find()){
             // outputtofile
-            System.out.println("outputtofile");
+            startTimer();
+            //System.out.println("outputtofile");
+            io.outputtofile(s);
+            endTimer();
         }else if(matchers[2].find()){
             // search
         }else if(matchers[3].find()){
@@ -141,68 +152,109 @@ public class QueryParser {
         }else if(matchers[4].find()){
             // delete
         }else if(matchers[5].find()){
-            // select
+            // select]
+            startTimer();
             //System.out.println("A select query.");
             Select selector = new Select(io.db);
             selector.select(s);
+            endTimer();
         }else if(matchers[6].find()){
+            startTimer();
             System.out.println("A project query.");
             Project projector = new Project(io.db);
             projector.project(s);
+            endTimer();
             // project
         }else if(matchers[7].find()){
+            startTimer();
             Join joiner = new Join(io.db, s);
             joiner.join();
+            endTimer();
             // join
         }else if(matchers[8].find()){
             // groupby
         }else if(matchers[9].find()){
+            startTimer();
             Aggregate agg = new Aggregate(io.db);
             agg.count(s);
+            endTimer();
             // count
         }else if(matchers[10].find()){
+            startTimer();
             Aggregate agg = new Aggregate(io.db);
             agg.sum(s);
+            endTimer();
             // sum
         }else if(matchers[11].find()){
+            startTimer();
             Aggregate agg = new Aggregate(io.db);
             agg.avg(s);
+            endTimer();
             // avg
         }else if(matchers[12].find()){
+            startTimer();
             GroupAgg ga = new GroupAgg(io.db);
             ga.countgroup(s);
+            endTimer();
             // countgroup
         }else if(matchers[13].find()){
+            startTimer();
             GroupAgg ga = new GroupAgg(io.db);
             ga.sumgroup(s);
+            endTimer();
             // sumgroup
         }else if(matchers[14].find()){
+            startTimer();
             GroupAgg ga = new GroupAgg(io.db);
             ga.avggroup(s);
+            endTimer();
             // avggroup
         }else if(matchers[15].find()){
+            startTimer();
             Moving ma = new Moving(io.db);
             ma.movsum(s);
+            endTimer();
             // movsum
         }else if(matchers[16].find()){
+            startTimer();
             Moving ma = new Moving(io.db);
             ma.movavg(s);
+            endTimer();
             // movavg
         }else if(matchers[17].find()){
+            startTimer();
+            Sort S = new Sort(io.db);
+            S.sort(s);
+            endTimer();
             // sort
         }else if(matchers[18].find()) {
+            startTimer();
             Concat.concat(io.db, s);
+            endTimer();
             // concat
         }else if(matchers[19].find()) {
             // showtables
             io.db.showtables();
-        }else if(matchers[20].find()){
+        }else if(matchers[20].find()) {
             //showshema
             io.db.showSchema();
-
+        }else if(matchers[21].find()) {
+            // hash
+            Hash ha = new Hash(io.db, s);
+        }else if(matchers[22].find()){
+            System.out.println("Btree");
+            Btree bt = new Btree(io.db, s);
         }else{
             // error
             System.out.println("There's syntax error in the query.");
         }
+    }
+
+    private void startTimer(){
+        this.START = System.currentTimeMillis();
+    }
+
+    private void endTimer(){
+        System.out.printf("Time cost: %.4f seconds\n\n", ((double)System.currentTimeMillis() - (double)START)/1000);
     }
 }

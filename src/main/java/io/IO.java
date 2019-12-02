@@ -6,18 +6,61 @@ import java.util.regex.Pattern;
 //import index.*;
 
 import db.*;
+import parser.Parser;
+import util.PrettyPrinter;
 
 public class IO{
 
     Database db;
+    String input_path;
+    String output_path;
 
-    public IO(Database db) {
+    public IO(Database db, String input_path, String output_path) {
         /**
          * @param db: Database to associate this IO interface to.
          *
          * Each IO can only input/output for this one database.
          * */
         this.db = db;
+        this.input_path = input_path;
+        this.output_path = output_path;
+    }
+
+    public void outputtofile(String s) {
+        String btwParens = Parser.get_conditions(s);
+        String[] inside = btwParens.split(",");
+        String table = inside[0].trim();
+        String out_file = inside[1].trim();
+
+        BufferedWriter bw = null;
+        try {
+            File file = new File(output_path + out_file);
+
+            /* This logic will make sure that the file
+             * gets created if it is not present at the
+             * specified location*/
+            if (!file.exists())
+                file.createNewFile();
+
+            FileWriter fw = new FileWriter(file);
+            bw = new BufferedWriter(fw);
+
+            PrettyPrinter.prettyPrintTable(bw, db.getTable(table));
+            //bw.write(mycontent);
+
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+        finally {
+            try{
+                if(bw!=null)
+                    bw.close();
+            }catch(Exception ex){
+                System.out.println("Error in closing the BufferedWriter"+ex);
+            }
+        }
+
+
     }
 
     public boolean inputfromfile(String s) {
@@ -29,9 +72,10 @@ public class IO{
         String name, path;
         try{
             if (path_matcher.find()) {
-                path = path_matcher.group(1);
+                // concatenate the input path to the input file name
+                path = input_path + path_matcher.group(1);
                 //TODO: delete test println
-                System.out.println(path);
+                //System.out.println(path);
             }else {
                 System.out.println("Illegal format of file path");
                 return false;
@@ -115,7 +159,7 @@ public class IO{
             db.getTable(name).printData();
 
             // TODO print out database size after all has been read in
-            // below line is migrated to Table.printData
+            // below line is migrated to StaticTable.printData
             //System.out.println("Number of entries inserted is: " + db.getTable(name).getTableSize());
         }catch(Exception io_e){
             System.out.println("Something wrong happened while reading the file!");
@@ -123,11 +167,6 @@ public class IO{
         }
 
         return true;
-    }
-
-
-    public void outputtofile() {
-        return;
     }
 
 

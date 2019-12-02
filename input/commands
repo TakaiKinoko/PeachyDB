@@ -9,7 +9,18 @@ T := join(R, S, R.customerid = S.C)
 T := join(R1, S, R1.qty > S.Q)
 T := join(R1, S, R1.qty > S.Q)
 T := join(R, S, (R.customerid = S.C))
+
 T1 := join(R1, S, (R1.qty > S.Q) and (R1.saleid = S.saleid))
+T2 := sort(T1, S_C)
+
+T2 := sort(S, Q)
+T3 := sort(S, Q, saleid)
+T4 := sort(S, Q, P)
+
+RS1 := sort(R, saleid)
+RS2 := sort(R, saleid, pricerange)
+RS3 := sort(R, customerid, pricerange)
+
 
 Tsmall := join(R1, S, (R1.qty = S.Q) and (R1.saleid = S.saleid))
 Tsmall := join(R1, S, (R1.qty = S.Q) and (R1.saleid = S.saleid))
@@ -62,6 +73,8 @@ B := select(R, ((itemid=98) or (customerid=51)))
 C :=select(R, pricerange=outrageous)
 C_count := count(C, pricerange)
 C := select(R, customerid=119)
+C1 := select(R, customerid=119 and itemid>7)
+C2 := select(R, customerid=119 and 7<itemid)
 C := select(R, pricerange=outrageous and customerid=119)
 D := select(R, pricerange!=outrageous and customerid=119)
 

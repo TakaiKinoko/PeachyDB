@@ -3,6 +3,7 @@ package util;
 import db.*;
 import parser.Parser;
 
+import java.io.BufferedWriter;
 import java.util.*;
 
 public class Utils{
@@ -35,7 +36,6 @@ public class Utils{
         }
     }
 
-    /*
     public static double calculateAverageList(ArrayList col) {
         try {
             double sum = calculateSumList(col);
@@ -49,50 +49,20 @@ public class Utils{
     }
 
     public static double calculateSumList(ArrayList col) {
-        try{
-            double sum = 0;
-            if(col != null && col.size() != 0) {
-                System.out.println("\nNOT null");
-                for(Object mark : col) {
-                    System.out.println("\ninside loop");
-                    System.out.print(mark + " ");
-                    sum += Double mark;
-                }
-            }
-            return sum;
-        }catch(Exception e){
-            System.out.println("Exception when calculating sum.");
-            return 0.0;
-        }
-    }*/
-
-    public static double calculateAverageList(ArrayList col) {
-        try {
-            double sum = calculateSumList(col);
-            if (col != null && col.size() != 0)
-                return sum / col.size();
-            return sum;
-        }catch(Exception e){
-            System.out.println("Exception when calculating avg.");
-            return 0.0;
-        }
-    }
-
-    public static double calculateSumList(ArrayList<String> col) {
         //System.out.println("\nINSIDE UTILS" + col);
-        try{
+        //try{
             double sum = 0;
             if(col != null && col.size() != 0) {
                 for(int i = 0; i < col.size(); i++) {
 
-                    sum += Double.valueOf(col.get(i));
+                    sum += Double.valueOf(String.valueOf(col.get(i)));
                 }
             }
             return sum;
-        }catch(Exception e){
-            System.out.println("Exception when calculating sum.");
-            return 0.0;
-        }
+        //}catch(Exception e){
+          //  System.out.println("Exception when calculating sum.");
+          //  return 0.0;
+        //}
     }
 
     public static Table getFromTable(String btwParens, Database db){
@@ -154,12 +124,6 @@ public class Utils{
             sortedMap.put(entry.getKey(), entry.getValue());
         }
 
-        /*
-        //classic iterator example
-        for (Iterator<Map.Entry<String, Integer>> it = list.iterator(); it.hasNext(); ) {
-            Map.Entry<String, Integer> entry = it.next();
-            sortedMap.put(entry.getKey(), entry.getValue());
-        }*/
 
         return sortedMap;
     }
