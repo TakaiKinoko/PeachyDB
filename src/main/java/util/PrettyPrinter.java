@@ -136,6 +136,9 @@ public class PrettyPrinter {
     }
 
     private static String prettyPrintAllEntries(Table tb, int[] maxLen, boolean crop, boolean borders){
+        /**
+         * Print the indexed order!
+         * */
         String[][] data;
         try{
             data = tb.getData();
@@ -155,8 +158,9 @@ public class PrettyPrinter {
         StringBuilder entry = new StringBuilder();
         if(!crop) {
             for (int i = 0; i < lines; i++) {
+                int ind = tb.index.get(i);
                 for (int j = 0; j < col_num; j++)
-                    entry.append(getBox(data[j][i], maxLen[j], "|"));
+                    entry.append(getBox(data[j][ind], maxLen[j], "|"));
                 entry.append("|" + "\n");
                 if(i == lines-1) {
                     // bottom border
@@ -168,23 +172,27 @@ public class PrettyPrinter {
             }
         }else if(crop && lines < 20){
             for (int i = 0; i < lines; i++) {
+                int ind = tb.index.get(i);
                 for (int j = 0; j < col_num; j++)
-                    entry.append(getBox(data[j][i], maxLen[j], "|"));
+                    entry.append(getBox(data[j][ind], maxLen[j], "|"));
                 entry.append("|" + "\n");
             }
             entry.append(border + "\n");
         }else{
             int limit = 20 < lines? 20: lines;
+            int ind;
             for (int i = 0; i < limit/2; i++) {
+                ind = tb.index.get(i);
                 for (int j = 0; j < col_num; j++)
-                    entry.append(getBox(data[j][i], maxLen[j], "|"));
+                    entry.append(getBox(data[j][ind], maxLen[j], "|"));
                 entry.append("|" + "\n");
             }
             entry.append(getOmission(tb, maxLen));
             entry.append("  \n");
             for (int i = lines - limit/2; i < lines; i++) {
+                ind = tb.index.get(i);
                 for (int j = 0; j < col_num; j++)
-                    entry.append(getBox(data[j][i], maxLen[j], "|"));
+                    entry.append(getBox(data[j][ind], maxLen[j], "|"));
                 entry.append("|" + "\n");
             }
             entry.append(border + "\n");

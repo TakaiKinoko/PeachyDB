@@ -200,7 +200,7 @@ public class JoinOld {
         long gb_start = System.currentTimeMillis();
         GroupAgg proxy = new GroupAgg(this.db);
         //System.out.println("!!! " + db.getTable(t1).getTableSize());
-        TreeMap<GroupKey<String>, ArrayList> groups1 = proxy.groupby(db.getTable(t1), 0, new String[]{col1}, GroupAgg.Map_type.TREE);
+        TreeMap<GroupKey<String>, ArrayList> groups1 = proxy.groupby(db.getTable(t1), 0, new String[]{col1}, GroupAgg.Map_type.TREE, true);
 
         System.out.println("TIME ELAPSED AFTER THE FIRST GROUPBY: " + (System.currentTimeMillis() - START));
 
@@ -208,7 +208,7 @@ public class JoinOld {
         end = System.currentTimeMillis();
         times.put("#" + count + "(evalArith)", end-START);
         count++; */
-        TreeMap<GroupKey<String>, ArrayList> groups2 = proxy.groupby(db.getTable(t2), 0, new String[]{col2}, GroupAgg.Map_type.TREE);
+        TreeMap<GroupKey<String>, ArrayList> groups2 = proxy.groupby(db.getTable(t2), 0, new String[]{col2}, GroupAgg.Map_type.TREE, true);
         System.out.println("TIME ELAPSED AFTER THE SECOND GROUPBY: " + (System.currentTimeMillis() - START));
 
         /*end = System.currentTimeMillis();

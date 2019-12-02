@@ -2,7 +2,7 @@
 
 ## TABLE OF CONTENTS
 
-1. [LIST OF QUERIES](README.md#QUERIES)
+1. [LIST OF QUERIES](README.md#QUERIES-SUPPORTED)
 2. [SETUP](README.md##SETUP)
     1. [compile and run with maven](README.md#compile-and-run-with-maven)
 3. [DOCUMENTATION](README.md##DOCUMENTATION)
@@ -11,14 +11,15 @@
     3. [algebraic queries](README.md#algebraic)
     4. [aggregate queries](README.md#aggregate)
     5. [moving aggregate queries](README.md#moving-aggregates)
+    6. [utility queries](README.md#utility)
 4. [FEATURES](README.md##FEATURES)
 5. [STATISTICS](README.md##STATISTICS)
 
-## QUERIES
+## QUERIES SUPPORTED
 
-1. [showtables](README.md#)
-1. [showschema](README.md#)
-1. [quit](README.md#)
+1. [showtables](README.md#show-tables)
+1. [showschema](README.md#show-schemas)
+1. [quit](README.md#quit)
 1. [inputfromfile](README.md#read-from-file)
 1. [outputtofile](README.md#write-table-to-file)
 1. [select](README.md#select)
@@ -158,7 +159,7 @@ Based off groupby
 
 ### utility
 
-#### quit 
+#### quit
 
 * syntax:  ```quit``` or   ```Quit```
 
@@ -193,37 +194,12 @@ Based off groupby
 +-----------+----------+
 ```
 
-#### show schemas
+##### show schemas
 
 * syntax: ```showschema()```
 
 * sample output:  # TODO USE PICTURE
 
-```$xslt
-+-----------+-----------------------------------------------------------------------------------------------------------------------------------------------------+
-| Table     | Schema                                                                                                                                              |
-+-----------+-----------------------------------------------------------------------------------------------------------------------------------------------------+
-| R2        | R2_saleid | R2_qty | R2_pricerange |                                                                                                                |
-| T4        | R1_saleid | R1_itemid | R1_customerid | R1_storeid | R1_time | R1_qty | R1_pricerange | S_saleid | S_I | S_C | S_S | S_T | S_Q | S_P | mov_sum |    |
-| Q1        | Q1_saleid | Q1_itemid | Q1_customerid | Q1_storeid | Q1_time | Q1_qty | Q1_pricerange |                                                             |
-| R3        | avg_qty |                                                                                                                                           |
-| Q2        | Q2_saleid | Q2_itemid | Q2_customerid | Q2_storeid | Q2_time | Q2_qty | Q2_pricerange |                                                             |
-| R4        | groupby_qty | sum_time |                                                                                                                            |
-| Q3        | Q3_saleid | Q3_itemid | Q3_customerid | Q3_storeid | Q3_time | Q3_qty | Q3_pricerange |                                                             |
-| R5        | groupby_time | groupby_pricerange | sum_qty |                                                                                                       |
-| Q4        | Q4_saleid | Q4_itemid | Q4_customerid | Q4_storeid | Q4_time | Q4_qty | Q4_pricerange |                                                             |
-| R6        | groupby_pricerange | avg_qty |                                                                                                                      |
-| Q5        | saleid | itemid | customerid | storeid | time | qty | pricerange |                                                                                  |
-| R         | saleid | itemid | customerid | storeid | time | qty | pricerange |                                                                                  |
-| S         | saleid | I | C | S | T | Q | P |                                                                                                                    |
-| T         | R_saleid | R_itemid | R_customerid | R_storeid | R_time | R_qty | R_pricerange | S_saleid | S_I | S_C | S_S | S_T | S_Q | S_P |                     |
-| T2prime   | R1_saleid | R1_itemid | R1_customerid | R1_storeid | R1_time | R1_qty | R1_pricerange | S_saleid | S_I | S_C | S_S | S_T | S_Q | S_P |              |
-| T1        | R1_saleid | R1_itemid | R1_customerid | R1_storeid | R1_time | R1_qty | R1_pricerange | S_saleid | S_I | S_C | S_S | S_T | S_Q | S_P |              |
-| T2        | R1_saleid | R1_itemid | R1_customerid | R1_storeid | R1_time | R1_qty | R1_pricerange | S_saleid | S_I | S_C | S_S | S_T | S_Q | S_P |              |
-| R1        | R1_saleid | R1_itemid | R1_customerid | R1_storeid | R1_time | R1_qty | R1_pricerange |                                                             |
-| T3        | R1_saleid | R1_itemid | R1_customerid | R1_storeid | R1_time | R1_qty | R1_pricerange | S_saleid | S_I | S_C | S_S | S_T | S_Q | S_P | mov_sum |    |
-+-----------+-----------------------------------------------------------------------------------------------------------------------------------------------------+
-```
 ## FEATURES
 
 #### In Order

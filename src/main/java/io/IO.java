@@ -1,6 +1,7 @@
 package io;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 //import index.*;
@@ -45,7 +46,16 @@ public class IO{
             FileWriter fw = new FileWriter(file);
             bw = new BufferedWriter(fw);
 
-            PrettyPrinter.prettyPrintTableToFile(bw, db.getTable(table), false, true);
+            Table tb = db.getTable(table);
+
+            // MAKE SURE THE TABLE HAS INDEX
+            if(tb.index == null || tb.index.size() != tb.getTableSize()){
+                tb.index = new HashMap<>();
+                for(int i = 0; i < tb.getTableSize(); i++)
+                    tb.index.put(i, i);
+            }
+
+            PrettyPrinter.prettyPrintTableToFile(bw, tb, false, true);
             //bw.write(mycontent);
 
         } catch (IOException ioe) {

@@ -3,6 +3,8 @@ package aggregation;
 import db.*;
 import parser.Parser;
 import util.Utils;
+
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Deque;
 
@@ -40,7 +42,7 @@ public class Moving {
     // UPDATED
     private void apply(String s, Op op){
         /**
-         *
+         *  TODO: preserve indexed order
          * */
         String btwParens, toTable;
         Table fromTable;
@@ -78,7 +80,10 @@ public class Moving {
                 projects[i] = c;
                 cols[i++] = c;
             }
-            cols[i] = "mov_sum";
+            if(op == Op.SUM)
+                cols[i] = "mov_sum";
+            else cols[i] = "mov_avg";
+
             System.out.println("Schema prepared.");
             int newColNum = i+1;
 
@@ -96,8 +101,12 @@ public class Moving {
             db.setSchema(cols, toTable);
             System.out.println("Schema set up.");
 
-            int movsum_col = db.getTable(toTable).getSchema().get("mov_sum");
-            String[] movsum = db.getTable(toTable).getData()[movsum_col]; // mov_sum column
+            int mov_col;
+            if(op == Op.SUM)
+                mov_col = db.getTable(toTable).getSchema().get("mov_sum");
+            else
+                mov_col = db.getTable(toTable).getSchema().get("mov_avg");
+            String[] mov = db.getTable(toTable).getData()[mov_col]; // mov_sum column
 
             for(String n: db.getTable(toTable).getSchema().keySet()){
                 System.out.println("result table col: "+ n);
@@ -110,16 +119,26 @@ public class Moving {
             // TODO compute moving sum
             Deque<Integer> Q = new LinkedList<Integer>();
 
+            // INITIALIZE INDEX TO ITS PHYSICAL ORDERING
+            if(fromTable.index == null || fromTable.index.size() != fromTable.getTableSize()){
+                fromTable.index = new HashMap<>();
+                for(int ind = 0; ind < fromTable.getTableSize(); ind++)
+                    fromTable.index.put(ind, ind);
+            }
+
             for(int j = 0; j < fromTable.getTableSize(); j++){
+                int ind = fromTable.index.get(j);
                 if(Q.size() >= window)
                     Q.removeFirst();
-                Q.addLast(Integer.valueOf(col[j]));
+                Q.addLast(Integer.valueOf(col[ind]));
                 Integer sum = sumDeque(Q);
                 if(op == Op.SUM)
-                    movsum[j] = String.valueOf(sum);
+                    mov[ind] = String.valueOf(sum);
                 else if(op == Op.AVG)
-                    movsum[j] = String.valueOf(sum / window);
+                    mov[ind] = String.valueOf((double)sum / (double)Q.size());
             }
+            // TODO copy index from fromTable to toTable
+            db.getTable(toTable).index = fromTable.index;
 
             // TODO print table
             db.getTable(toTable).printData();

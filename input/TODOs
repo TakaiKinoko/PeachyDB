@@ -1,0 +1,7 @@
+1. check Double
+2. check if all index are transmitted between table creations
+3. clean up
+4. write the output of all operations to a file named fh643_AllOperations
+5. change output file names to fh643_<filename>
+6. implement relop in select
+7. join using index haven't done

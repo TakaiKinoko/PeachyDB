@@ -46,8 +46,9 @@ public class Entry {
             }
         }
 
-        Timer timer = new Timer();
-        timer.schedule(new enterCommand(), 0, 30000);
+        //Timer timer = new Timer();
+        //timer.schedule(new enterCommand(), 0, 30000);
+        PrettyPrinter.enterCommandMsg();
 
         while(s.hasNext()) {
             String q = s.nextLine();

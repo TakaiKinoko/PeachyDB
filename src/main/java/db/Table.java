@@ -14,7 +14,7 @@ public class Table {
     //private ArrayList<ArrayList> data;   // pointer to DATA store  index <-> [values]
     private String[][] data;
     //TODO FIX INDEX
-    HashMap<Integer, Integer> index;  // sorted ordering mapped to it's physical index
+    public HashMap<Integer, Integer> index;  // sorted ordering mapped to it's physical index
     public HashMap<String, HashMap<String, List<Integer>>> hash_indices;  // column name mapped to the hash index built on it
     public HashMap<String, BTree<BtreeKey, List<Integer>>> btree_indices;
     //private List<IIndex> indices;
@@ -76,14 +76,15 @@ public class Table {
 
     // UPDATED
     public void printData() {
-        PrettyPrinter.prettyPrintTableToStdOut(this, true); //TODO
-        /*
+        // INITIALIZE INDEX TO ITS PHYSICAL ORDERING
         if(index == null || index.size() != getTableSize()){
             index = new HashMap<>();
             for(int i = 0; i < getTableSize(); i++)
                 index.put(i, i);
         }
 
+        PrettyPrinter.prettyPrintTableToStdOut(this, true); //TODO
+/*
         // TODO pretty printer
         System.out.println("\n\n========================\n" +
                            "  TABLE: " + name +

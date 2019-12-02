@@ -42,11 +42,12 @@ public class Sort {
         //getOrder(fromTable, key_cols);
 
         GroupAgg proxy = new GroupAgg(this.db);
-        TreeMap<GroupKey<String>, ArrayList> groups = proxy.groupby(fromTable, 0, key_cols, GroupAgg.Map_type.TREE);
+        TreeMap<GroupKey<String>, ArrayList> groups = proxy.groupby(fromTable, 0, key_cols, GroupAgg.Map_type.TREE, true);
         HashMap<Integer, Integer> index = new HashMap<>();
 
         int cnt = 0;
-        for(GroupKey k: groups.keySet()){
+        // get key set in ascending order
+        for(GroupKey k: groups.navigableKeySet()){
             for(Object ind: groups.get(k)){
                 //fromTable.printEntry((Integer)ind);
                 // CREATED SORTED INDEX

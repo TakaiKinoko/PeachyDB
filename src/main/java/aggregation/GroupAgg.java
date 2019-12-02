@@ -63,39 +63,21 @@ public class GroupAgg {
             //System.out.println("Schema size: " + cols);
             String[][] data = new String[cols][res.size()];
 
-            //System.out.println("Data size: " + data.length + " x " + data[0].length);
-
             // compute sum for each group
             int cnt = 0;
             for(GroupKey k: res.keySet()){
-                //for(Object g: k.getKey())
-                //    System.out.print(g + " ");
                 ArrayList box = res.get(k);
                 Double avg = Utils.calculateAverageList(box);
-                //System.out.println("avg: " + avg);
-                //String[] entry = new String[cols];
                 int i;
                 for(i = 0; i < cols-1; i++)
                     data[i][cnt] = String.valueOf(k.getKey()[i]);
                 data[i][cnt] = String.valueOf(avg);
-                    //entry[i] = String.valueOf(k.getKey()[i]);
-                //entry[i] = String.valueOf(avg);
-                //target.insertData(entry);
                 cnt++;
             }
-
-            /*
-            for(int i = 0; i < data.length; i++){
-                for(int j = 0; j < data[0].length; j++)
-                    System.out.print(data[i][j] + "\t");
-                System.out.println();
-            }*/
 
             target.updateData(data);
 
             target.printData();
-            //Variable var = new Variable(Parser.get_toTable(s), res);
-            //db.newVariable(var);
 
         //} catch (Exception e) {
        //     System.out.println("Exception ");
@@ -136,7 +118,7 @@ public class GroupAgg {
     }
 
     // UPDATED
-    public TreeMap<GroupKey<String>, ArrayList> groupby(Table tb, int target, String[] groupby, Map_type t){
+    public TreeMap<GroupKey<String>, ArrayList> groupby(Table tb, int target, String[] groupby, Map_type t, boolean get_index){
         /**
          * Group by one column at a time.
          * @param tb: table to operate on
@@ -191,13 +173,17 @@ public class GroupAgg {
                 String[] comp = new String[groupby.length];
                 cnt = 0;
                 for (int col : gb_cond) {
-                    System.out.println(data[col][ind]);
+                    //System.out.println(data[col][ind]);
                     comp[cnt] = data[col][ind];
                     cnt++;
                 }
                 GroupKey key = new GroupKey(comp);
                 ArrayList box = res.getOrDefault(key, new ArrayList());
-                box.add(ind);
+                if(get_index)
+                    box.add(ind);
+                else
+                    box.add(data[target][ind]);
+
                 res.put(key, box);
             }
 
@@ -228,7 +214,7 @@ public class GroupAgg {
             String[] inside = btwParens.split(",");
             Table fromTable = db.getTable(inside[0].trim());
             Integer target = fromTable.getSchema().get(inside[1].trim());
-            //System.out.println("Target: " + target);
+            System.out.println("Target: " + fromTable.getSchema().get(target));
             String[] groupby = new String[inside.length - 2];
 
             //System.out.print("Group columns ");
@@ -236,7 +222,8 @@ public class GroupAgg {
                 groupby[i - 2] = inside[i].trim();
             }
 
-            res = groupby(fromTable, target, groupby, Map_type.TREE);
+            // get target, not index
+            res = groupby(fromTable, target, groupby, Map_type.TREE, false);
 
             String[] schema = new String[groupby.length + 1];
             int i;
