@@ -112,6 +112,16 @@ public class PrettyPrinter {
         return boundary.toString();
     }
 
+    private static String prettyPrintCustomizedBorder(Table tb, int[] maxLen, String boundary) {
+        StringBuilder border = new StringBuilder();
+        for(String s: tb.getSchema().keySet()) {
+            // schema is sorted, so this is fine...
+            border.append(PrettyPrinter.getBorder(maxLen[tb.getSchema().get(s)], boundary, "-"));
+        }
+        border.append(boundary);
+        return border.toString();
+    }
+
     private static String prettyPrintTableHeader(Table tb, int[] maxLen){
         StringBuilder header = new StringBuilder();
         for(String s: tb.getSchema().keySet()) {
@@ -139,6 +149,8 @@ public class PrettyPrinter {
         //System.out.println("Data size: " + col_num + " x " + lines);
 
         String border = prettyPrintBorder(tb, maxLen);
+        String innerborder = prettyPrintCustomizedBorder(tb, maxLen, "|");
+        //String bottom = prettyPrintCustomizedBorder(tb, maxLen, "-");  // bottom border of the table
 
         StringBuilder entry = new StringBuilder();
         if(!crop) {
@@ -146,8 +158,13 @@ public class PrettyPrinter {
                 for (int j = 0; j < col_num; j++)
                     entry.append(getBox(data[j][i], maxLen[j], "|"));
                 entry.append("|" + "\n");
-                if(borders)
+                if(i == lines-1) {
+                    // bottom border
                     entry.append(border + "\n");
+                    break;
+                }
+                if(borders)
+                    entry.append(innerborder + "\n");
             }
         }else if(crop && lines < 20){
             for (int i = 0; i < lines; i++) {
