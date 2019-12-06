@@ -1,5 +1,6 @@
 package io;
 
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,8 +12,9 @@ import util.PrettyPrinter;
 import util.Sort;
 
 public class QueryParser {
-
-    /** COMMANDS SUPPORTED:
+    /**
+     * This class parses queries, calls the queried functions which operate on the associated table(s)
+     * COMMANDS SUPPORTED:
      * ===============
      * I/O
      * ===============
@@ -45,49 +47,17 @@ public class QueryParser {
      * - sort
      * - concat
      */
-    /*
-    Pattern input_p, output_p;
-    Pattern insert_p, deletion_p, search_p;
-    Pattern select_p, project_p, join_p, groupby_p;
-    Pattern count_p, sum_p, avg_p, countgroup_p, sumgroup_p, avggroup_p;
-    Pattern movavg_p, movsum_p;
-    Pattern sort_p, concat_p;
-    */
-    Matcher[] matchers;
-    Pattern[] patterns;
-    int command_num;
-    IO io; //
+    private Matcher[] matchers;
+    private Pattern[] patterns;
+    private int command_num;
+    private IO io;
 
     private long START;
 
     public QueryParser(IO io){
         /**
-        // I/O
-        input_p = Pattern.compile("^inputfromfile"); // 0
-        output_p = Pattern.compile("^outputtofile"); // 1
-        // DATA
-        search_p = Pattern.compile("^search");  // 2
-        insert_p = Pattern.compile("^insert");  // 3
-        deletion_p = Pattern.compile("^delete");// 4
-        // ALGEBRA
-        select_p = Pattern.compile("^select");  // 5
-        project_p = Pattern.compile("^project");// 6
-        join_p = Pattern.compile("^join");      // 7
-        groupby_p = Pattern.compile("^groupby");// 8
-        // AGGREGATE
-        count_p = Pattern.compile("^count");    // 9
-        sum_p = Pattern.compile("^sum");        // 10
-        avg_p = Pattern.compile("^avg");        // 11
-        countgroup_p = Pattern.compile("^countgroup"); // 12
-        sumgroup_p = Pattern.compile("^sumgroup");     // 13
-        avggroup_p = Pattern.compile("^avggroup");     // 14
-        // MOVING AGGREGATE
-        movsum_p = Pattern.compile("^movsum");        // 15
-        movavg_p = Pattern.compile("^movavg");         // 16
-        // OTHER
-        sort_p = Pattern.compile("^sort");             // 17
-        concat_p = Pattern.compile("^concat");         // 18
-        */
+         * @param io: the io (subsequently database) to direct queries to.
+         * */
         this.io = io;
         patterns = new Pattern[24];
         // I/O
@@ -128,7 +98,7 @@ public class QueryParser {
         matchers = new Matcher[i];  // matchers correspond to each of the patterns
     }
 
-    public void decodeQuery(String s) {
+    public void decodeQuery(String s) throws IOException  {
         /**
          * @param s: query string to be decoded
          * will direct the string consequently to the right query function
@@ -137,133 +107,112 @@ public class QueryParser {
         for(int i = 0; i < command_num; i++)
             matchers[i] = patterns[i].matcher(s);
 
-        if(matchers[0].find()){
+        System.out.println("\n" + s);
+        if(matchers[0].find()){                     // inputfromfile
             startTimer();
             io.inputfromfile(s);
             endTimer();
-        }else if(matchers[1].find()){
-            // outputtofile
+        }else if(matchers[1].find()){               // outputtofile
             startTimer();
-            //System.out.println("outputtofile");
             io.outputtofile(s);
             endTimer();
-        }else if(matchers[2].find()){
-            // search
-        }else if(matchers[3].find()){
-            // insert
-        }else if(matchers[4].find()){
-            // delete
-        }else if(matchers[5].find()){
-            // select]
+        }else if(matchers[2].find()){               // search (not implemented)
+        }else if(matchers[3].find()){               // insert (not implemented)
+        }else if(matchers[4].find()){               // delete (not implemented)
+        }else if(matchers[5].find()){               // select
             startTimer();
-            //System.out.println("A select query.");
             Select selector = new Select(io.db);
             selector.select(s);
             endTimer();
-        }else if(matchers[6].find()){
+        }else if(matchers[6].find()){               // project
             startTimer();
-            System.out.println("A project query.");
             Project projector = new Project(io.db);
             projector.project(s);
             endTimer();
-            // project
-        }else if(matchers[7].find()){
+        }else if(matchers[7].find()){               // join
             startTimer();
             Join joiner = new Join(io.db, s);
             joiner.join();
             endTimer();
-            // join
-        }else if(matchers[8].find()){
-            // groupby
-        }else if(matchers[9].find()){
+        }else if(matchers[8].find()){               // groupby
+        }else if(matchers[9].find()){               // count
             startTimer();
             Aggregate agg = new Aggregate(io.db);
             agg.count(s);
             endTimer();
-            // count
-        }else if(matchers[10].find()){
+        }else if(matchers[10].find()){              // sum
             startTimer();
             Aggregate agg = new Aggregate(io.db);
             agg.sum(s);
             endTimer();
-            // sum
-        }else if(matchers[11].find()){
+        }else if(matchers[11].find()){              // avg
             startTimer();
             Aggregate agg = new Aggregate(io.db);
             agg.avg(s);
             endTimer();
-            // avg
-        }else if(matchers[12].find()){
+        }else if(matchers[12].find()){              // countgroup
             startTimer();
             GroupAgg ga = new GroupAgg(io.db);
             ga.countgroup(s);
             endTimer();
-            // countgroup
-        }else if(matchers[13].find()){
+        }else if(matchers[13].find()){              // sumgroup
             startTimer();
             GroupAgg ga = new GroupAgg(io.db);
             ga.sumgroup(s);
             endTimer();
-            // sumgroup
-        }else if(matchers[14].find()){
+        }else if(matchers[14].find()){              // avggroup
             startTimer();
             GroupAgg ga = new GroupAgg(io.db);
             ga.avggroup(s);
             endTimer();
-            // avggroup
-        }else if(matchers[15].find()){
+        }else if(matchers[15].find()){              // movsum
             startTimer();
             Moving ma = new Moving(io.db);
             ma.movsum(s);
             endTimer();
-            // movsum
-        }else if(matchers[16].find()){
+        }else if(matchers[16].find()){              // movavg
             startTimer();
             Moving ma = new Moving(io.db);
             ma.movavg(s);
             endTimer();
-            // movavg
-        }else if(matchers[17].find()){
+        }else if(matchers[17].find()){              // sort
             startTimer();
             Sort S = new Sort(io.db);
             S.sort(s);
             endTimer();
-            // sort
-        }else if(matchers[18].find()) {
+        }else if(matchers[18].find()) {             // concat
             startTimer();
             Concat.concat(io.db, s);
             endTimer();
-            // concat
-        }else if(matchers[19].find()) {
-            // showtables
+        }else if(matchers[19].find()) {             // showtables
             io.db.showtables();
-        }else if(matchers[20].find()) {
-            //showshema
+        }else if(matchers[20].find()) {             //showshema
             io.db.showSchema();
-        }else if(matchers[21].find()) {
-            // hash
+        }else if(matchers[21].find()) {             // hash
             Hash ha = new Hash(io.db, s);
-        }else if(matchers[22].find()) {
-            // btree
-            System.out.println("Btree");
+        }else if(matchers[22].find()) {             // btree
             Btree bt = new Btree(io.db, s);
-        }else if(matchers[23].find()){
-            //quit
+        }else if(matchers[23].find()){              //quit
             PrettyPrinter.printGoodbye();
             // Terminate JVM
             System.exit(0);
 
-        }else{
-            // error
+        }else{                                      // error
             System.out.println("There's syntax error in the query.");
         }
     }
 
     private void startTimer(){
+        /**
+         * record when the queried function is being called
+         * */
         this.START = System.currentTimeMillis();
     }
 
     private void endTimer(){
+        /**
+         * record when the queried function is finished and print out its time cost to stdout
+         * */
         System.out.printf("Time cost: %.4f seconds\n\n", ((double)System.currentTimeMillis() - (double)START)/1000);
     }
 }

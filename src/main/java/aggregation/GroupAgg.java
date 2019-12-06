@@ -155,7 +155,7 @@ public class GroupAgg {
         //System.out.println("~~~" + gb_cond.length + "~~~");
         for(int i = 0; i < groupby.length; i++){
             gb_cond[i] = tb.getSchema().get(groupby[i]);
-            System.out.println("..." + gb_cond[i] + "...");
+            //System.out.println("..." + gb_cond[i] + "...");
         }
 
         //String[] target_col = data[target];
@@ -214,7 +214,7 @@ public class GroupAgg {
             String[] inside = btwParens.split(",");
             Table fromTable = db.getTable(inside[0].trim());
             Integer target = fromTable.getSchema().get(inside[1].trim());
-            System.out.println("Target: " + fromTable.getSchema().get(target));
+            //System.out.println("Target: " + fromTable.getSchema().get(target));
             String[] groupby = new String[inside.length - 2];
 
             //System.out.print("Group columns ");

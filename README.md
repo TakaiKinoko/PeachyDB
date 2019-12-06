@@ -1,19 +1,20 @@
 # PeachyDB: a miniature relational database 
 
 ## TABLE OF CONTENTS
-
+1. [SPECIAL INSTRUCTIONS FOR GRADERS](README.md#instructions-for-graders)
 1. [LIST OF QUERIES](README.md#QUERIES-SUPPORTED)
-2. [SETUP](README.md##SETUP)
+1. [SETUP](README.md#SETUP)
     1. [compile and run with maven](README.md#compile-and-run-with-maven)
-3. [DOCUMENTATION](README.md##DOCUMENTATION)
+    1. [run with shell script](README.md#run-with-shell-script)
+1. [DOCUMENTATION](README.md#DOCUMENTATION)
     1. [table naming convention](README.md#table-naming-convention)
-    2. [I/O queries](README.md#I/O)
-    3. [algebraic queries](README.md#algebraic)
-    4. [aggregate queries](README.md#aggregate)
-    5. [moving aggregate queries](README.md#moving-aggregates)
-    6. [utility queries](README.md#utility)
-4. [FEATURES](README.md##FEATURES)
-5. [STATISTICS](README.md##STATISTICS)
+    1. [I/O queries](README.md#I/O)
+    1. [algebraic queries](README.md#algebraic)
+    1. [aggregate queries](README.md#aggregate)
+    1. [moving aggregate queries](README.md#moving-aggregates)
+    1. [utility queries](README.md#utility)
+1. [FEATURES](README.md#FEATURES)
+1. [STATISTICS](README.md#STATISTICS)
 
 ## QUERIES SUPPORTED
 
@@ -36,6 +37,18 @@
 1. [movavg](README.md#moving-average)
 1. [movsum](README.md#moving-sum)
 
+## instructions for graders
+
+* step 1: put all input data files and the file containing test queries under ```input/```.
+
+* step 2: add _one line_ to the __end__ of the above file: ```quit```
+
+* step 3: open ```input_pipe``` and change the second line to match the name of the above file.
+
+* step 4: at root dir, run ```./run.sh```
+ 
+* After the above steps, find outputs under ```output/```
+
 ## SETUP
 
 ### compile and run with maven
@@ -56,7 +69,7 @@ $ mvn compile
 $ mvn package
 ```
 
-* run 
+* run interactively
 ```
 $ java -cp target/peachyDB-1.0.jar Entry
 ```
@@ -64,6 +77,12 @@ $ java -cp target/peachyDB-1.0.jar Entry
 * exit the database
 
     type ```quit``` when the database is running.
+
+### run with shell script
+
+* ```./run.sh``` at root
+
+* this will feed all query lines from ```input/handout``` to the database and direct __stdout__ to ```output/fh643_AllOperations```
 
 
 ## DOCUMENTATION
@@ -88,18 +107,84 @@ $ java -cp target/peachyDB-1.0.jar Entry
 
 * syntax: ```<table_name> := inputfromfile(<filepath>)```
 
+* implementation: under ```src/io/IO.java```
+
 * note: 
+
     1. a ```<filepath>``` must be assigned to a ```<table_name>```
-    1. ```<table_name>``` format: ```[a-zA-Z]+\d*```
-    1. ```<filepath>``` should be the relative path from __Entry.java__ to the file __without__ parenthesis
-    1. reading in a new file means initializing a new table. 
-    1. the order of the file is preserved when read into the underlying data-structure of each table (an array-table).
-* example: ```inputfromfile(../../../input/sales1.txt)```
+  
+    1. the database at default tries to read files from the ```/input``` folder. So ```<filepath>``` should be the relative path from ```/input``` to the file
+  
+    1. reading in a new file will create a new table. 
+    
+    1. a __truncated view__ of the table will be printed out to StdOut once data has been read in successfully, for example: 
+        ```$xslt
+        reading from file: input/sales2.txt into table: S...
+        
+        +----------+---------+---------+------+------+------+--------------+
+        | saleid   | I       | C       | S    | T    | Q    | P            |
+        +----------+---------+---------+------+------+------+--------------+
+        | 3506     | 13517   | 16566   | 45   | 73   | 19   | expensive    |
+        | 78345    | 10528   | 4745    | 20   | 73   | 23   | supercheap   |
+        | 79991    | 6715    | 707     | 75   | 41   | 34   | expensive    |
+        | 90466    | 6697    | 8397    | 83   | 92   | 16   | outrageous   |
+        | 22332    | 9639    | 2435    | 29   | 17   | 31   | moderate     |
+        | 95047    | 11877   | 2020    | 44   | 79   | 29   | supercheap   |
+        | 48867    | 12387   | 15274   | 98   | 76   | 35   | supercheap   |
+        | 22220    | 10650   | 5746    | 57   | 73   | 24   | outrageous   |
+        | 53696    | 9958    | 11849   | 85   | 16   | 9    | supercheap   |
+        | 34328    | 11376   | 4042    | 50   | 66   | 44   | supercheap   |
+        
+          ...        ...       ...       ...    ...    ...    ...          
+          
+        | 62617    | 10689   | 15710   | 3    | 73   | 29   | supercheap   |
+        | 74088    | 6099    | 14086   | 37   | 95   | 44   | moderate     |
+        | 66449    | 10137   | 2465    | 41   | 73   | 31   | cheap        |
+        | 11662    | 9096    | 19072   | 6    | 16   | 21   | supercheap   |
+        | 33022    | 6259    | 5746    | 54   | 11   | 44   | supercheap   |
+        | 86141    | 10713   | 5746    | 71   | 73   | 4    | outrageous   |
+        | 64366    | 8775    | 18198   | 43   | 61   | 49   | supercheap   |
+        | 41918    | 10898   | 18816   | 61   | 92   | 18   | moderate     |
+        | 43539    | 8229    | 16589   | 14   | 92   | 47   | supercheap   |
+        | 2356     | 8909    | 14012   | 32   | 82   | 24   | supercheap   |
+        +----------+---------+---------+------+------+------+--------------+
+        Number of entries: 100000
+        
+        Time cost: 0.1450 seconds
+        ```
+
+* example: ```inputfromfile(sales1.txt)```, where ```sales1.txt``` is stored inside ```/input```
         
 #### write table to file
 
+* syntax: ```outputtofile(<table>, <filename>)```
 
+* implementation: under ```src/io/IO.java```
 
+* note: 
+    
+    1. the database at default tries to save files to the ```/output``` folder.
+    
+    1. __PrettyPrinter__ (see ```/src/util/PrettyPrinter.java```) is used to format the output table.
+    
+    1. sample pretty-printed result: 
+        ```$xslt
+        +----------------------+----------------------+
+        | groupby_pricerange   | avg_qty              |
+        +----------------------+----------------------+
+        | cheap                | 20.546875            |
+        |----------------------|----------------------|
+        | expensive            | 24.954545454545453   |
+        |----------------------|----------------------|
+        | moderate             | 22.384615384615383   |
+        |----------------------|----------------------|
+        | outrageous           | 23.717047451669597   |
+        |----------------------|----------------------|
+        | supercheap           | 26.10126582278481    |
+        +----------------------+----------------------+
+        Number of entries: 5
+        ```
+    
 ### algebraic
 
 #### select
@@ -120,6 +205,10 @@ $ java -cp target/peachyDB-1.0.jar Entry
 internally: use treemap
         
 #### concat
+
+* syntax: ```<target_table> := concat(<table1>, <table2>)```
+
+* implemented in ```src/algebra/Concat.java```
 
 #### join
 
@@ -163,44 +252,50 @@ Based off groupby
 
 * syntax:  ```quit``` or   ```Quit```
 
+* implemented in ```src/io/QueryParser.java```
+
 #### show tables
 
 * syntax: ```showtables()``` 
 
-* sample output: 
-```
-+-----------+----------+
-| Table     | Size     |
-+-----------+----------+
-| R2        | 900      |
-| T4        | 391      |
-| Q1        | 28       |
-| R3        | 1        |
-| Q2        | 28       |
-| R4        | 50       |
-| Q3        | 1        |
-| R5        | 178      |
-| Q4        | 1        |
-| R6        | 5        |
-| Q5        | 29       |
-| R         | 1000     |
-| S         | 100000   |
-| T         | 3642     |
-| T2prime   | 391      |
-| T1        | 391      |
-| T2        | 391      |
-| R1        | 900      |
-| T3        | 391      |
-+-----------+----------+
-```
+* implemented in ```src/db/Database.java```
 
-##### show schemas
+* sample output: 
+    ```
+    +-----------+----------+
+    | Table     | Size     |
+    +-----------+----------+
+    | R2        | 900      |
+    | R         | 1000     |
+    | S         | 100000   |
+    | T         | 3642     |
+    | T2prime   | 391      |
+    | T1        | 391      |
+    | T2        | 391      |
+    | R1        | 900      |
+    | T3        | 391      |
+    +-----------+----------+
+    ```
+
+#### show schemas
 
 * syntax: ```showschema()```
 
-* sample output:  # TODO USE PICTURE
+* implemented in ```src/db/Database.java```
+
+* sample output:  
+    ```
+    +---------+-----------------------------------------------------------------------+
+    | Table   | Schema                                                                |
+    +---------+-----------------------------------------------------------------------+
+    | R       | saleid | itemid | customerid | storeid | time | qty | pricerange |    |
+    | S       | saleid | I | C | S | T | Q | P |                                      |
+    +---------+-----------------------------------------------------------------------+
+    ```
 
 ## FEATURES
+
+#### in memory
 
 #### In Order
 

@@ -4,22 +4,29 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-//import index.*;
 
 import db.*;
 import parser.Parser;
 import util.PrettyPrinter;
 
 public class IO{
+    /**
+     * Once a database is initialized, the IO class helps establish input/output path for the associated database.
+     *
+     * Two query commands are implemented here:
+     * 1. inputfromfile
+     * 2. outputtofile
+     * */
 
-    Database db;
-    String input_path;
-    String output_path;
+    Database db;  // the (unique) database this IO unit is associated with
+    private String input_path;
+    private String output_path;
 
     public IO(Database db, String input_path, String output_path) {
         /**
          * @param db: Database to associate this IO interface to.
-         *
+         * @param input_path: Default input path.
+         * @param output_path: Default output path.
          * Each IO can only input/output for this one database.
          * */
         this.db = db;
@@ -28,6 +35,9 @@ public class IO{
     }
 
     public void outputtofile(String s) {
+        /**
+         * @param s: query string (unparsed)
+         * */
         String btwParens = Parser.get_conditions(s);
         String[] inside = btwParens.split(",");
         String table = inside[0].trim();
@@ -56,7 +66,6 @@ public class IO{
             }
 
             PrettyPrinter.prettyPrintTableToFile(bw, tb, false, true);
-            //bw.write(mycontent);
 
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -69,11 +78,12 @@ public class IO{
                 System.out.println("Error in closing the BufferedWriter"+ex);
             }
         }
-
-
     }
 
     public boolean inputfromfile(String s) {
+        /**
+         * @param s: query string (unparsed)
+         * */
         // parse file name and table name from s
         Pattern name_p = Pattern.compile("([a-zA-Z]+\\d*)(\\s*):=");
         Pattern path_p = Pattern.compile("\\((.*?)\\)");
@@ -94,7 +104,7 @@ public class IO{
             if(name_matcher.find()){
                 name = name_matcher.group(1);
                 //TODO: delete the test println
-                System.out.println(name);
+                //System.out.println(name);
             }else {
                 System.out.println("Illegal name to assign to a table");
                 return false;
@@ -177,15 +187,6 @@ public class IO{
         }
 
         return true;
-    }
-
-
-    private static boolean isNumeric(String strNum) {
-        Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
-        if (strNum == null) {
-            return false;
-        }
-        return pattern.matcher(strNum).matches();
     }
 
 }

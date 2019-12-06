@@ -11,54 +11,36 @@ public class Table {
      * the natural ordering of data works as the index into the data
      * each column is an ArrayList in itself
      * */
-    //private ArrayList<ArrayList> data;   // pointer to DATA store  index <-> [values]
     private String[][] data;
-    //TODO FIX INDEX
     public HashMap<Integer, Integer> index;  // sorted ordering mapped to it's physical index
     public HashMap<String, HashMap<String, List<Integer>>> hash_indices;  // column name mapped to the hash index built on it
     public HashMap<String, BTree<BtreeKey, List<Integer>>> btree_indices;
-    //private List<IIndex> indices;
     public String name;  // name is the string before ":=" in a command
     private Map<String, Integer> schema; // map column names to its index
     private boolean isDerivative = false;  // indicates that the table is built as a subset of another table
     private int entry_num = 0;  // track the position to insert entry
 
-    // UPDATED
     public Table(String name, int col_num, int lines){
         /**
          * @param col_num: the number of columns in the data, which is the ROW-DIM of the 2D array
          * @param lines: the number of entries of the data, which is the COL-DIM of the 2D array
          * */
         data = new String[col_num][lines];
-        //data = new ArrayList();
-        //data.add(new ArrayList()); // the only column added when initializing table is the index column
         this.name = name;
         this.schema = new HashMap<>();
         this.index = new HashMap<>();
     }
 
-    // ADDED
     public Table(String name){
         this.name = name;
         schema = new HashMap<>();
         this.index = new HashMap<>();
     }
 
-    // ADDED -- sample use: JoinOld.java line 519
-    public boolean initializeDataMatrix(String[][] data){
-        try {
-            this.data = data;
-            return true;
-        }catch(Exception e){
-            System.out.println("Couldn't initialize data matrix.");
-            return false;
-        }
-    }
     public void isDerivative(){
         isDerivative = true;
     }
 
-    // UPDATED
     public int getTableSize(){
         /**
          * @return the number of entries in this table
@@ -66,76 +48,17 @@ public class Table {
         return data[0].length;
     }
 
-
-    public void printEntry(Integer ind){
-        for(int i = 0; i < schema.size(); i++){
-            System.out.print(data[i][ind] + "\t");
-        }
-        System.out.println();
-    }
-
-    // UPDATED
-    public void printData() {
-        // INITIALIZE INDEX TO ITS PHYSICAL ORDERING
-        if(index == null || index.size() != getTableSize()){
-            index = new HashMap<>();
-            for(int i = 0; i < getTableSize(); i++)
-                index.put(i, i);
-        }
-
-        PrettyPrinter.prettyPrintTableToStdOut(this, true); //TODO
-/*
-        // TODO pretty printer
-        System.out.println("\n\n========================\n" +
-                           "  TABLE: " + name +
-                         "\n========================");
-        System.out.println(schemaToString());
-        //System.out.println("FINE AFTER PRINTING SCHEMA");
-        // TODO USE INDEX
-        for(int n = 0; n < getTableSize(); n++){
-            int ind = index.get(n);
-            //System.out.println("Index: " + ind);
-            StringBuilder entry = new StringBuilder();
-            //entry.append(ind+": ");
-            for(int m = 0; m < data.length; m++){
-                entry.append(data[m][ind] + "\t");
-            }
-            System.out.println(entry.toString());
-        }
-        System.out.println("Number of entries inserted is: " + getTableSize() + "\n\n");  */
-    }
+    // =================================================================================================================
+    //                                  INDEX related functions
+    // =================================================================================================================
 
     public void updateIndex(HashMap<Integer, Integer> index){
         this.index = index;
     }
 
-    // UPDATED
-    public boolean insertData(String[] entry){
-        /**
-         * @param entry: a new entry to the database
-         *             containing heterogenous data which is either string or int
-         * @return true if no error, false otherwise
-         * */
-        ///try{
-            // iterate over data columns (rows of 2D array data)
-            for(int i = 0; i < entry.length; i++)
-                data[i][entry_num] = entry[i];
-            index.put(entry_num, entry_num);
-            entry_num++;
-            // TODO manage indices
-            return true;
-        //}catch(Exception e) {
-       //     System.out.println("Exception while inserting data into the table.");
-        //    return false;
-       // }
-    }
-
-    public void updateData(String[][] data){
-        this.data = data;
-    }
-
-
-    // UPDATED
+    // =================================================================================================================
+    //                                  SCHEMA related functions
+    // =================================================================================================================
     public boolean setSchema(String[] cols) {
         /**
          * @param cols: array of column names read from the input data file
@@ -161,7 +84,6 @@ public class Table {
 
     }
 
-    // SAME
     public boolean updateSchema(Map<String, Integer> schema){
         /**
          * Note that this function doesn't add new columns to the table as setSchema() does
@@ -175,29 +97,8 @@ public class Table {
         }
     }
 
-    // SAME
     public Map<String, Integer> getSchema(){
         return schema;
-    }
-
-    // UPDATED
-    public String[][] getData() {
-        return data;
-    }
-
-    // UPDATED
-    public int[] prettyPrintNameLen(){
-        /**
-         * @return an integer pair of <table_name_len, data_size_len>
-         * */
-        int[] len = new int[2];
-        len[0] = name.length();
-        len[1] = String.valueOf(getTableSize()).length();
-        return len;
-    }
-
-    public int prettyPrintSchemaLen(){
-        return schemaToString().length();
     }
 
     public String schemaToString() {
@@ -223,6 +124,73 @@ public class Table {
             System.out.println("Error happened while reading the schema.");
             return "ERROR";
         }
+    }
+
+    // =================================================================================================================
+    //                                  DATA related functions
+    // =================================================================================================================
+    public String[][] getData() {
+        return data;
+    }
+
+    public boolean insertData(String[] entry){
+        /**
+         * @param entry: a new entry to the database
+         *             containing heterogenous data which is either string or int
+         * @return true if no error, false otherwise
+         * */
+        try{
+            // iterate over data columns (rows of 2D array data)
+            for(int i = 0; i < entry.length; i++)
+                data[i][entry_num] = entry[i];
+            index.put(entry_num, entry_num);
+            entry_num++;
+            // TODO manage indices
+            return true;
+        }catch(Exception e) {
+            System.out.println("Exception while inserting data into the table.");
+            return false;
+        }
+    }
+
+    //sample use: JoinOld.java line 519
+    public boolean initializeDataMatrix(String[][] data){
+        try {
+            this.data = data;
+            return true;
+        }catch(Exception e){
+            System.out.println("Couldn't initialize data matrix.");
+            return false;
+        }
+    }
+
+    public void updateData(String[][] data){
+        this.data = data;
+    }
+
+    public void printData() {
+        // INITIALIZE INDEX TO ITS PHYSICAL ORDERING
+        if(index == null || index.size() != getTableSize()){
+            index = new HashMap<>();
+            for(int i = 0; i < getTableSize(); i++)
+                index.put(i, i);
+        }
+
+        PrettyPrinter.prettyPrintTableToStdOut(this, true); //TODO
+    }
+
+    public int[] prettyPrintNameLen(){
+        /**
+         * @return an integer pair of <table_name_len, data_size_len>
+         * */
+        int[] len = new int[2];
+        len[0] = name.length();
+        len[1] = String.valueOf(getTableSize()).length();
+        return len;
+    }
+
+    public int prettyPrintSchemaLen(){
+        return schemaToString().length();
     }
 
 }

@@ -72,7 +72,7 @@ public class Btree {
 
         // List all the key-val pairs in the btree -- true indicates to print to StdOut
         try {
-            index.list(iter, true);
+            index.list(iter, false); // don't print
         }catch(IOException E){
             System.out.println("IO Exception.");
         }

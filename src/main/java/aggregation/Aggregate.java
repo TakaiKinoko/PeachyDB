@@ -21,6 +21,11 @@ public class Aggregate {
         makeAggTable(s, "sum");
     }
 
+    // UPDATED
+    public void count(String s) {
+        makeAggTable(s, "count");
+    }
+
     private void makeAggTable(String s, String op){
         try {
             String toTable = Parser.get_toTable(s);
@@ -52,10 +57,4 @@ public class Aggregate {
             System.out.println("Exception.");
         }
     }
-
-    // UPDATED
-    public void count(String s) {
-        makeAggTable(s, "count");
-    }
-
 }

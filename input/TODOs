@@ -1,7 +1,16 @@
 1. check Double
 2. check if all index are transmitted between table creations
 3. clean up
-4. write the output of all operations to a file named fh643_AllOperations
-5. change output file names to fh643_<filename>
-6. implement relop in select
+4. write the output of all operations to a file named fh643_AllOperations -- done
+5. change output file names to fh643_<filename> -- done
+6. implement arithop in select -- done
 7. join using index haven't done
+8. implement arithop in join -- done
+9. more than two ORs or ANDs in join/select
+
+
+10. fix printing empty table issue
+Exception in thread "main" java.lang.IllegalArgumentException: bound must be positive
+	at java.base/java.util.Random.nextInt(Random.java:388)
+	at util.PrettyPrinter.getColLengths(PrettyPrinter.java:95)
+	at util.PrettyPrinter.prettyPrintTableToStdOut(PrettyPrinter.java:53)

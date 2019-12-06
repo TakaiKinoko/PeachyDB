@@ -39,3 +39,4 @@ outputtofile(Q4, Q4)
 Q5 := concat(Q4, Q2)
 outputtofile(Q5, Q5)
 outputtofile(T, T)
+quit

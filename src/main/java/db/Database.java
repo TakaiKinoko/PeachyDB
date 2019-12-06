@@ -1,46 +1,36 @@
 package db;
 
-//import index.IIndex;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import util.*;
-
 
 public class Database {
     /**
      * The Database should support multiple tables. With each new file being read in, a new Table is initialized.
      * Database class manages all tables invisibly.
      * */
-
-    private Map<String, Table> tables;  // name table pair
+    private Map<String, Table> tables;  // map table name with its data
     public Map<String, DynamicTable> dynamicTables;
-    //private String[] names;         // keep track of the names of tables
-    //private String currentTable;   // keep track of the current table being accessed.
-    private Map<String, Variable> variables;  // store results of e.g. avg, count...
 
     public Database(){
         /**
          * constructor
          * */
         tables = new HashMap<>();
-        variables = new HashMap<>();
         dynamicTables = new HashMap<>();
     }
 
-    public boolean newVariable(Variable var){
-        try {
-            variables.put(var.name, var);
-            return true;
-        }catch(Exception e){
-            return false;
-        }
-    }
-
-    // UPDATED
+    // =================================================================================================================
+    //                                  CREATE table
+    // =================================================================================================================
     public boolean newTable(String name, int col_num, int lines){
+        /**
+         * Create a new table with size known ahead of time
+         * @param name: name to associate this new table with
+         * @param col_num: length of the 2D array to be created -- number of columns
+         * @param lines: width of the 2D array -- number of records
+         * */
         try {
             tables.put(name, new Table(name, col_num, lines));
             return true;
@@ -50,15 +40,14 @@ public class Database {
         }
     }
 
-    // ADDED -- sample use: Select.java line 71
     public boolean newEmptyTable(String name){
+        /**
+         * Create an empty table with size unknown
+         * @param name: name to associate this new table with
+         * sample use: Select.java line 71
+         * */
         try {
             tables.put(name, new Table(name));
-            // TODO delete
-            System.out.println();
-            for(String t: tables.keySet())
-                System.out.println("table: " + t);
-            System.out.println();
             return true;
         }catch(Exception e){
             System.out.println("Error creating new table!");
@@ -67,6 +56,10 @@ public class Database {
     }
 
     public boolean newDynamicTable(String name){
+        /**
+         * Create a table which adjusts its size dynamically
+         * @param name: name to associate this new table with
+         * */
         try{
             this.dynamicTables.put(name, new DynamicTable(name));
             return true;
@@ -76,11 +69,99 @@ public class Database {
         }
     }
 
+    // =================================================================================================================
+    //                                  GET table
+    // =================================================================================================================
+    public Table getTable(String name){
+        /**
+         * Get the table associated with the name.
+         * @param name: name of the tables
+         * @return: the table with the specified name
+         * WILL return null if the named table doesn't exist
+         * */
+        return tables.get(name);
+    }
+
     public DynamicTable getDynamicTable(String name){
-        // TODO SAFE GUARD
+        /**
+         * Get the dynamic table associated with the name.
+         * @param name: name of the tables
+         * @return: the table with the specified name
+         * WILL return null if the named table doesn't exist
+         * */
         return dynamicTables.get(name);
     }
-    // UPDATED
+
+    // =================================================================================================================
+    //                                  SCHEMA related functions
+    // =================================================================================================================
+
+    public boolean copySchema(String from_table, String to_table){
+        /**
+         * Copy the schema of from_table to to_table
+         * @param from_table: whose schema is being copied
+         * @param to_table: it's schema is going to be a DEEP COPY of the from_table
+         * @return true if no error, false otherwise
+         * */
+        try {
+            Map<String, Integer> copy = new HashMap<>();
+            Map<String, Integer> origin = getTable(from_table).getSchema();
+            for (String col : origin.keySet()) {
+                copy.put(col, origin.get(col));
+            }
+            return getTable(to_table).updateSchema(copy);
+        }catch(Exception e){
+            System.out.println("Exception while creating schema for the new table.");
+            return false;
+        }
+    }
+
+    public boolean setSchema(String[] cols, String table) {
+        /**
+         * @param cols: array of column names read from the input data file
+         * @param table: name of the table to operate on
+         * @return: true if no error, false otherwise
+         * */
+        return getTable(table).setSchema(cols);
+    }
+
+    public Map<String, Integer> getSchema(String table){
+        /***
+         * @param table: name of the table to get schema for
+         */
+        return tables.get(table).getSchema();
+    }
+
+
+    private boolean sameSchema(String table1, String table2){
+        /**
+         * Checks to see if table1 and table2 has the same schema.
+         * Used e.g. before concatenating two tables.
+         * */
+        Map<String, Integer> s1;
+        Map<String, Integer> s2;
+        try{
+            s1 = getTable(table1).getSchema();
+            s2 = getTable(table2).getSchema();
+        }catch(Exception e){
+            System.out.println("Couldn't locate the two tables or their schemas.");
+            return false;
+        }
+
+        // prove that s1's schema is necessarily the subset of s2's schema
+        for(String k: s1.keySet()){
+            if(!s2.keySet().contains(k))
+                return false;
+        }
+
+        // prove that s1 and s2 has the same schema size
+        return s1.keySet().size() == s2.keySet().size();
+    }
+
+    // =================================================================================================================
+    //                                  DATA related functions
+    // =================================================================================================================
+
     public boolean insertData(String[] entry, String table){
         /**
          * @param entry: a new entry to the database
@@ -91,7 +172,16 @@ public class Database {
         return tables.get(table).insertData(entry);
     }
 
-    // UPDATED
+    public String[][] getData(String table) {
+        /***
+         * @param table: name of the table to get data for
+         */
+        return tables.get(table).getData();
+    }
+
+    // =================================================================================================================
+    //                         functions that make NEW TABLES out of ANOTHER TABLE
+    // =================================================================================================================
     public boolean projectTable(String from_table, String to_table, String[] cols){
         /**
          * project the columns in @params cols from @from_table to @to_table
@@ -118,10 +208,6 @@ public class Database {
         // mark to_table as derivative
         toTable.isDerivative();
 
-        // copy index column from fromTable to toTable
-        //toTable.getData().remove(0);
-        //toTable.getData().add(0, fromTable.getData().get(0));
-
         try{
             for(String col: cols){
                 toCol = toSchema.get(col);
@@ -136,12 +222,16 @@ public class Database {
         }
     }
 
-    // UPDATED
     public boolean concatTables(String table1, String table2, String target){
         /**
-         * concatenate @param table2 to the back of @param table1 into a new table @param target.
-         *
+         * concatenate table2 to the back of table1 into a new table named target.
+         * @param table1: table being concatenated
+         * @param table2: table being concatenated
+         * @param target: resulting table
+         * @return true if no error
          * table1 and table2 must have the same schema.
+         * Note that concatenation doesn't preserve Hash/Btree indices.
+         * The natural order index is currently being restored when data is printed out after concat is finished. see printData() within Table.java
          * */
         assert sameSchema(table1, table2);
 
@@ -164,18 +254,6 @@ public class Database {
                 System.arraycopy(t2[i], 0, dest[i], t1_size, t2_size);
             }
 
-            /*
-            for (int i = 0; i < t1.length; i++) {
-                ArrayList newCol = new ArrayList(t1.get(i));
-                newCol.addAll(t2.get(i));
-                getTable(target).addColumn(newCol);
-            }
-            // update index of the target table
-            ArrayList index = new ArrayList();
-            for (int i = 0; i < t1.get(0).size() + t2.get(0).size(); i++)
-                index.add(i);
-            getTable(target).updateColumn(0, index);
-            */
         }catch(Exception e){
             System.out.println("Error while concatenating tables.");
             return false;
@@ -184,10 +262,9 @@ public class Database {
         return true;
     }
 
-    // UPDATED -- sample use: Select.java line 140
     public boolean copySubset(String from_table, String to_table, List<Integer> subset){
         /**
-         * copy the subset of entries from @param from_table to @param to_table, where the indices of the subset
+         * copy the subset of ENTRIES(not columns) from @param from_table to @param to_table, where the indices of the subset
          * is specified in the @param subset
          *
          * @param from_table: table to copy data from
@@ -195,6 +272,11 @@ public class Database {
          * @param subset: indices of the items of from_table to be copied to to_table
          *
          * Condition: the to_table should have been constructed with Table(String name), so that the data field is still null
+         *
+         * Note that the operation doesn't preserve Hash/Btree indices.
+         * The natural order index is currently being restored when data is printed out after concat is finished. see printData() within Table.java
+         *
+         * sample use: Select.java line 140
          * */
         // mark to_table as derivative
         String[][] to, from;
@@ -205,14 +287,7 @@ public class Database {
             col_num = getSchema(from_table).size();
             to = new String[col_num][subset.size()];
             getTable(to_table).initializeDataMatrix(to);
-            System.out.println("Table size: " + col_num + " x " + subset.size());
             from = getTable(from_table).getData();
-            // data columns of to_table is already set up when setup schema before
-            //ArrayList<ArrayList> from = getTable(from_table).getData();
-            //System.out.println("FROM TABLE: " + from_table + " column: " + from.size());
-            //ArrayList<ArrayList> to = getTable(to_table).getData();
-            //System.out.println("TO TABLE: " + to_table + " column: " + to.size());
-            //int col_num = from.size(), i = 0;  // number of columns
         }catch(Exception e){
             System.out.println("Tables don't exist.");
             return false;
@@ -220,20 +295,12 @@ public class Database {
 
         int n = 0;
 
-        try{
-        // iterate over items
+        try{ // iterate over items
             for(Integer i: subset){
-                //StringBuilder entry = new StringBuilder();
-                //entry.append(i + ": ");
-                // iterate over columns
-                //to.get(0).add(i); // index (reordered from 0)
                 for(int m = 0; m < col_num; m++){
                     to[m][n] = from[m][i];
-                    //to.get(k).add(from.get(k).get(j));
-                    //entry.append(from.get(k).get(j));
                 }
                 n++;
-                //System.out.println(entry.toString());
             }
             return true;
         }catch(Exception e) {
@@ -241,95 +308,13 @@ public class Database {
         }
     }
 
-    private boolean sameSchema(String table1, String table2){
-        Map<String, Integer> s1;
-        Map<String, Integer> s2;
-        try{
-            s1 = getTable(table1).getSchema();
-            s2 = getTable(table2).getSchema();
-        }catch(Exception e){
-            System.out.println("Couldn't locate the two tables or their schemas.");
-            return false;
-        }
-
-        // prove that s1's schema is necessarily the subset of s2's schema
-        for(String k: s1.keySet()){
-            if(!s2.keySet().contains(k))
-                return false;
-        }
-
-        // prove that s1 and s2 has the same schema size
-        return s1.keySet().size() == s2.keySet().size();
-    }
-
-    public boolean copySchema(String from_table, String to_table){
-        try {
-            Map<String, Integer> copy = new HashMap<>();
-            Map<String, Integer> origin = getTable(from_table).getSchema();
-            for (String col : origin.keySet()) {
-                copy.put(col, origin.get(col));
-            }
-            return getTable(to_table).updateSchema(copy);
-        }catch(Exception e){
-            System.out.println("Exception while creating schema for the new table.");
-            return false;
-        }
-    }
-
-    public boolean setSchema(String[] cols, String table) {
-        /**
-         * @param cols: array of column names read from the input data file
-         * @param table: name of the table to operate on
-         * @return: true if no error, false otherwise
-         * */
-        //System.out.println("In Database.java, setSchema");
-        return getTable(table).setSchema(cols);
-    }
-
-    public Map<String, Integer> getSchema(String table){
-        /***
-         * @param table: name of the table to get schema for
-         */
-        return tables.get(table).getSchema();
-    }
-
-    public Table getTable(String name){
-        return tables.get(name);
-        /*
-        for(String t: tables.keySet()){
-            if(t.equals(name))
-                return tables.get(t);
-        }
-        return null; */
-    }
-
-    public boolean addTable(Table table){
-        /**
-         * Add table to the database (likely as a result of a query)
-         * If the table passed in share the same name with an existing table, the old one will be overwritten.
-         *
-         * @param table: the table to be added to the database
-         * @return: true if no error has occurred
-         * */
-        try {
-            tables.put(table.name, table);
-            return true;
-        }catch(Exception e){
-            return false;
-        }
-    }
-
-    // UPDATED
-    public String[][] getData(String table) {
-        /***
-         * @param table: name of the table to get data for
-         */
-        return tables.get(table).getData();
-    }
-
-    // UPDATED
+    // =================================================================================================================
+    //                                  Print out statistics
+    // =================================================================================================================
     public void showtables(){
-        //TODO prettyprint : keep track of the max len
+        /**
+         * Pretty Print all the names of the tables in this database and their sizes
+         * */
         int maxName = "Table".length(), maxSize = "Size".length();
         int[] tmp;
         int padding = 2;
@@ -341,8 +326,6 @@ public class Database {
 
         maxName += padding*2;
         maxSize += padding*2;
-        //String nameBar = new String(new char[maxName]).replace("\0", "-");
-        //String sizeBar = new String(new char[maxSize]).replace("\0", "-");
 
         String boundary = PrettyPrinter.getBorder(maxName, "+", "-")
                         + PrettyPrinter.getBorder(maxSize, "+", "-") + "+";
@@ -361,13 +344,10 @@ public class Database {
 
     }
 
-    /*
-    public List<IIndex> getIndices() {
-        return indices;
-    }*/
-
-    // UPDATED
     public void showSchema(){
+        /**
+         * Pretty Print all the names of the tables in this database and their schemas
+         * */
         int maxName = "Table".length(), maxSize = "Schema".length();
         int[] tmp;
         int sch_len;
@@ -397,5 +377,4 @@ public class Database {
         }
         System.out.println(boundary);
     }
-
 }

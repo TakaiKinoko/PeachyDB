@@ -2,7 +2,7 @@ package algebra;
 
 import db.*;
 import parser.Parser;
-import util.Utils;
+import util.*;
 
 import java.util.*;
 
@@ -83,13 +83,21 @@ public class Join {
 
         Map<Table, Integer> col_map1; // map tables to the selected column in the first join condition
         Op arith1;
-        Boolean reverse1;              // indicate if the tables to the left and right of the operand is in reverse order as table1 and 2
+        Boolean reverse1;             // indicate if the tables to the left and right of the operand is in reverse order as table1 and 2
+        // ADDED
+        Map<Table, Parser.ArithOp> arith_map1;  // in case the syntax is [table1].[column1] [+|-|*|\] [table2].[column2]
+        Map<Table, String> constant_map1;
 
         Op bool;                      // null if there's only one join condition
 
         Map<Table, Integer> col_map2; // null if there's only one condition
         Op arith2;   // null if only one condition
         Boolean reverse2;
+        // ADDED
+        Map<Table, Parser.ArithOp> arith_map2;
+        Map<Table, String> constant_map2;
+
+
         boolean twoConds;
 
         Conditions(String conditions, Table[] fromTables){
@@ -103,10 +111,25 @@ public class Join {
                 //===================================
                 // ONLY JOIN CONDITION
                 //===================================
-                String[] parts = Parser.arith_match(conditions);
+                /*String[] parts = Parser.arith_match(conditions);
                 this.col_map1 = parseCond(parts);
                 this.arith1 = getArithOperator(parts, reverse1);
+                this.twoConds = false;*/
+                Cond[] parts = Parser.arith_match(conditions);
+                this.arith_map1 = new HashMap<>();
+                this.constant_map1 = new HashMap<>();
+                this.col_map1 = parseCond(parts, arith_map1, constant_map1);
+                this.arith1 = getArithOperator(parts, reverse1);
                 this.twoConds = false;
+
+                /*
+                System.out.println("~~~~~~~~~~~~~~~~");
+                System.out.println(col_map1);
+                System.out.println(arith_map1);
+                System.out.println(constant_map1);
+                System.out.println("~~~~~~~~~~~~~~~~");
+*/
+
             }else{
                 //===================================
                 // TWO JOIN CONDITIONS
@@ -115,10 +138,14 @@ public class Join {
                 this.bool = getBoolOp(conds); // get boolean op
                 String cond1 = Parser.trim_cond(conds[0]); // get first condition
                 String cond2 = Parser.trim_cond(conds[2]); // get second condition
-                String[] parts1 = Parser.arith_match(cond1);
-                String[] parts2 = Parser.arith_match(cond2);
-                this.col_map1 = parseCond(parts1);
-                this.col_map2 = parseCond(parts2);
+                Cond[] parts1 = Parser.arith_match(cond1);
+                Cond[] parts2 = Parser.arith_match(cond2);
+                this.arith_map1 = new HashMap<>();
+                this.constant_map1 = new HashMap<>();
+                this.arith_map2 = new HashMap<>();
+                this.constant_map2 = new HashMap<>();
+                this.col_map1 = parseCond(parts1, arith_map1, constant_map1);
+                this.col_map2 = parseCond(parts2, arith_map2, constant_map2);
                 this.arith1 = getArithOperator(parts1, reverse1);
                 this.arith2 = getArithOperator(parts2, reverse2);
                 this.twoConds = true;
@@ -126,14 +153,23 @@ public class Join {
 
         }
 
-        Map<Table, Integer> parseCond(String[] parts){
-            // can only pass in an array of {<left_operand>, <operator>, <right_operand>}
+        //Map<Table, Integer> parseCond(String[] parts){
+        Map<Table, Integer> parseCond(Cond[] parts, Map<Table, Parser.ArithOp> arith_map, Map<Table, String> constant_map){
+            // {<left_operand>, <operator>, <right_operand>}
             assert parts.length == 3;
 
+            /*
             String[] leftOperand = Parser.decomposeOperand(parts[0]);
             String[] rightOperand = Parser.decomposeOperand(parts[2]);
             String t1name = leftOperand[0];// table name of the left operand
+            String t2name = rightOperand[0]; // table name of the right operand  */
+
+            String[] leftOperand = Parser.decomposeOperandFromCond(parts[0]);
+            String[] rightOperand = Parser.decomposeOperandFromCond(parts[2]);
+            String t1name = leftOperand[0];// table name of the left operand
             String t2name = rightOperand[0]; // table name of the right operand
+            Cond left = parts[0];
+            Cond right = parts[2];
 
             if(reverse1 == null){
                 reverse1 = !t1name.equals(table1.name);
@@ -149,29 +185,49 @@ public class Join {
             Map<Table, Integer> colMap = new HashMap<>();
             colMap.put(t1, t1.getSchema().get(col1));
             colMap.put(t2, t2.getSchema().get(col2));
+
+            // ADDED
+            if(left.type == Parser.Type.COLUMNOP) {
+                arith_map.put(t1, left.op);
+                constant_map.put(t1, left.constant);
+            }
+            if(right.type == Parser.Type.COLUMNOP) {
+                arith_map.put(t2, right.op);
+                constant_map.put(t2, right.constant);
+            }
+
             return colMap;
         }
 
-        Op getArithOperator(String[] parts, Boolean reverse){
+        //Op getArithOperator(String[] parts, Boolean reverse){
+        Op getArithOperator(Cond[] parts, Boolean reverse){
             /**
              * passing in reverse flag will make sure that the order tables in the conditions is aligned with the resulting table
              * */
             assert parts.length == 3 && reverse != null;
 
-            String operator = parts[1].trim();  // operator
+            /*
+            String operator = parts[1].trim();  // operator */
+            Parser.ArithOp operator = parts[1].op;
 
             switch(operator){
-                case "=":
+                //case "=":
+                case EQUAL:
                     return Op.EQUAL;
-                case "!=":
+                    // case "!=":
+                case NOT_EQUAL:
                     return Op.NOT_EQUAL;
-                case "<":
+                //case "<":
+                case LESS:
                     return reverse? Op.MORE_THAN : Op.LESS_THAN;
-                case "<=":
+                //case "<=":
+                case LESS_OR_EQUAL:
                     return reverse? Op.MORE_OR_EQUAL : Op.LESS_OR_EQUAL;
-                case ">":
+                //case ">":
+                case MORE:
                     return reverse? Op.LESS_THAN : Op.MORE_THAN;
-                case ">=":
+                //case ">=":
+                case MORE_OR_EQUAL:
                     return reverse? Op.MORE_OR_EQUAL : Op.MORE_OR_EQUAL;
                 default:
                     System.out.println("Unrecognized arithmetic operator.");
@@ -220,11 +276,11 @@ public class Join {
 
             for(int i = 0; i < table1.getTableSize(); i++){
                 for(int j = 0; j < table2.getTableSize(); j++) {
-                    if(!twoConds && condEval(i, j, col_map1, arith1)) {
+                    if(!twoConds && condEval(i, j, col_map1, arith1, arith_map1, constant_map1)) {
                         addData(data1, data2, colnum_1, colnum_2, i, j, target);
                     }else if(twoConds){
-                        boolean left = condEval(i, j, col_map1, arith1);
-                        boolean right = condEval(i, j, col_map2, arith2);
+                        boolean left = condEval(i, j, col_map1, arith1, arith_map1, constant_map1);
+                        boolean right = condEval(i, j, col_map2, arith2, arith_map2, constant_map2);
                         switch(bool){
                             case AND:
                                 if(left && right)
@@ -259,7 +315,7 @@ public class Join {
             }
         }
 
-        boolean condEval(int i, int j, Map<Table, Integer> col_map, Op arith){
+        boolean condEval(int i, int j, Map<Table, Integer> col_map, Op arith, Map<Table, Parser.ArithOp> arith_map, Map<Table, String> constant_map){
             /**
              * @param i: index of table1 entry
              * @param j: index of table2 entry
@@ -268,23 +324,60 @@ public class Join {
             int col2 = col_map.get(table2);
             String[][] data1 = table1.getData();
             String[][] data2 = table2.getData();
+            String orig1 = data1[col1][i];
+            String orig2 = data2[col2][j];
 
+            // TODO use a method to adjust the value to be compared based on the arithop inside each cond
+            String val1 = arith_map.get(table1) == null? orig1: adjustValue(arith_map, constant_map, orig1, table1);
+
+            String val2 = arith_map.get(table2) == null? orig2: adjustValue(arith_map, constant_map, orig2, table2);
+
+            boolean numerical = Utils.isNumeric(val1);
             switch(arith){
                 case EQUAL:
-                    return data1[col1][i].equals(data2[col2][j]);
+                    if(numerical)
+                        return Double.valueOf(val1) - Double.valueOf(val2) == 0.0;
+                    return val1.equals(val2);
+                    //return data1[col1][i].equals(data2[col2][j]);
                 case NOT_EQUAL:
-                    return !data1[col1][i].equals(data2[col2][j]);
+                    if(numerical)
+                        return Double.valueOf(val1) - Double.valueOf(val2) != 0.0;
+                    return !val1.equals(val2);
+                    //return !data1[col1][i].equals(data2[col2][j]);
                 case LESS_THAN:
-                    return Double.valueOf(data1[col1][i]) < Double.valueOf(data2[col2][j]);
+                    return Double.valueOf(val1) < Double.valueOf(val2);
+                    //return Double.valueOf(data1[col1][i]) < Double.valueOf(data2[col2][j]);
                 case LESS_OR_EQUAL:
-                    return Double.valueOf(data1[col1][i]) <= Double.valueOf(data2[col2][j]);
+                    return Double.valueOf(val1) <= Double.valueOf(val2);
+                    //return Double.valueOf(data1[col1][i]) <= Double.valueOf(data2[col2][j]);
                 case MORE_THAN:
-                    return Double.valueOf(data1[col1][i]) > Double.valueOf(data2[col2][j]);
+                    return Double.valueOf(val1) > Double.valueOf(val2);
+                    //return Double.valueOf(data1[col1][i]) > Double.valueOf(data2[col2][j]);
                 case MORE_OR_EQUAL:
-                    return Double.valueOf(data1[col1][i]) >= Double.valueOf(data2[col2][j]);
+                    return Double.valueOf(val1) >= Double.valueOf(val2);
+                    //return Double.valueOf(data1[col1][i]) >= Double.valueOf(data2[col2][j]);
                 default:
                     return false;
             }
         }
+
+        String adjustValue(Map<Table, Parser.ArithOp> arith_map, Map<Table, String> constant_map, String val, Table table){
+
+            String constant = constant_map.get(table);
+            switch(arith_map.get(table)){
+                case PLUS:
+                    return String.valueOf(Double.valueOf(val) + Double.valueOf(constant));
+                case MINUS:
+                    return String.valueOf(Double.valueOf(val) - Double.valueOf(constant));
+                case MULT:
+                    return String.valueOf(Double.valueOf(val) * Double.valueOf(constant));
+                case DIV:
+                    return String.valueOf(Double.valueOf(val) / Double.valueOf(constant));
+                default:
+                    return val;
+
+            }
+        }
+
     }
 }

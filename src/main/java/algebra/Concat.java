@@ -17,11 +17,11 @@ public class Concat {
             btwParens = Parser.get_conditions(s);
             // System.out.println("Between parens: " + btwParens);
             toTable = Parser.get_toTable(s);
-            System.out.println("To table: " + toTable);
+            //System.out.println("To table: " + toTable);
             t1 = Utils.getNthArg(btwParens, 1);
             t2 = Utils.getNthArg(btwParens, 2);
-            System.out.println("Table 1: " + t1);
-            System.out.println("Table 2: " + t2);
+            //System.out.println("Table 1: " + t1);
+            //System.out.println("Table 2: " + t2);
 
             db.concatTables(t1, t2, toTable);
             db.getTable(toTable).printData();

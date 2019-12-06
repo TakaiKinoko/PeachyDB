@@ -32,7 +32,6 @@ public class DynamicTable {
         }
 
         //target.printData();
-
     }
 
     public void setSchema(Map<String, Integer> schema){
@@ -52,31 +51,5 @@ public class DynamicTable {
 
     public int getTableSize(){
         return data.get(0).size();
-    }
-
-    public void printTable(){
-        int limit = 20 < getTableSize()? 20 : getTableSize();
-
-        try {
-            for (String k : schema.keySet())
-                System.out.print(k + "\t");
-            System.out.println();
-        }catch(Exception e){
-            System.out.println("Schema wasn't set up.");
-            return;
-        }
-
-        for(int i = 0; i < limit/2; i++){
-            for(int j = 0; j < schema.size(); j++)
-                System.out.print(data.get(j).get(i) + "\t");
-            System.out.println();
-        }
-        System.out.println("...");
-        for(int i = limit/2; i < limit; i++){
-            for(int j = 0; j < schema.size(); j++)
-                System.out.print(data.get(j).get(i) + "\t");
-            System.out.println();
-        }
-        System.out.println("Total: " + getTableSize() + " entries in the table");
     }
 }

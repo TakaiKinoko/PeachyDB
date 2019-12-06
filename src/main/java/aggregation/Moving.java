@@ -71,7 +71,7 @@ public class Moving {
             // TODO newTable
             db.newEmptyTable(toTable);
 
-            System.out.println("StaticTable created.");
+            //System.out.println("StaticTable created.");
             // TODO schema
             String[] cols = new String[fromTable.getSchema().size()+1];
             String[] projects = new String[cols.length];
@@ -84,7 +84,7 @@ public class Moving {
                 cols[i] = "mov_sum";
             else cols[i] = "mov_avg";
 
-            System.out.println("Schema prepared.");
+            //System.out.println("Schema prepared.");
             int newColNum = i+1;
 
             // TODO data
@@ -95,11 +95,11 @@ public class Moving {
                 todata[j] = fromdata[j];
             }
 
-            System.out.println("from table size: " + fromdata.length + fromdata[0].length);
-            System.out.println("to table size: " + todata.length + todata[0].length);
+            //System.out.println("from table size: " + fromdata.length + fromdata[0].length);
+            //System.out.println("to table size: " + todata.length + todata[0].length);
 
             db.setSchema(cols, toTable);
-            System.out.println("Schema set up.");
+            //System.out.println("Schema set up.");
 
             int mov_col;
             if(op == Op.SUM)
@@ -108,9 +108,9 @@ public class Moving {
                 mov_col = db.getTable(toTable).getSchema().get("mov_avg");
             String[] mov = db.getTable(toTable).getData()[mov_col]; // mov_sum column
 
-            for(String n: db.getTable(toTable).getSchema().keySet()){
-                System.out.println("result table col: "+ n);
-            }
+            //for(String n: db.getTable(toTable).getSchema().keySet()){
+            //    System.out.println("result table col: "+ n);
+            //}
             // TODO populate table
             // TODO -- WRONG?? NEW COLUMN HASN'T BEEN ADDED YET??
             //db.projectTable(fromTable.name, toTable, projects);

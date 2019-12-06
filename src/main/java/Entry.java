@@ -2,18 +2,17 @@ import db.*;
 import io.*;
 import util.*;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.Scanner;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class Entry {
+    /**
+     * This class is the entry to the database, with only a main function.
+     * */
 
     public static void main(String[] args) throws IOException {
-        String output_path = "output/";
+        // Default input path is /input, output path is /output. Default output file name prefix is "fh643_"
+        String output_path = "output/fh643_";
         String input_path = "input/";
 
         // create a new database
@@ -25,41 +24,48 @@ public class Entry {
         Scanner s = new Scanner(System.in);
         PrettyPrinter.printWelcome();
 
-        System.out.println("Do you want to run all the course commands from the course handout? (Y/y for yes, N/n for no)");
+        // option to read all queries from a file
+        System.out.println("Do you want to run all commands from a file? (Y/y for yes, N/n for no)");
         while(s.hasNext()){
             String ans = s.nextLine();
-            if(ans.charAt(0) == 'Y'|| ans.charAt(0) == 'y'){
-                File file = new File("input/handout");
-                BufferedReader br = new BufferedReader(new FileReader(file));
-                String st;
-                while ((st = br.readLine()) != null) {
-                    parser.decodeQuery(st);
+            if(ans.charAt(0) == 'Y'|| ans.charAt(0) == 'y') {
+                // read queries from a file
+                boolean read = false;
+                while (!read){
+                    try {
+                        System.out.println("File path:");
+                        String path = s.nextLine();
+                        File file = new File(path);
+                        BufferedReader br = new BufferedReader(new FileReader(file));
+                        String st;
+                        while ((st = br.readLine()) != null) {
+                            parser.decodeQuery(st);
+                        }
+                        System.out.println("Done executing.");
+                        br.close();
+                        read = true;
+                    } catch (FileNotFoundException e) {
+                        System.out.println("File doesn't exist");
+                    }
                 }
-                System.out.println("Done executing.");
-                br.close();
                 break;
             }else if(ans.charAt(0) == 'N'|| ans.charAt(0) == 'n')
                 break;
             else {
                 System.out.println("Wrong commands.");
-                continue;
             }
         }
 
-        //Timer timer = new Timer();
-        //timer.schedule(new enterCommand(), 0, 30000);
+        /* if want to print out enterCommand message at each set interval, use the two lines below
+        Timer timer = new Timer();
+        timer.schedule(new enterCommand(), 0, 30000); */
         PrettyPrinter.enterCommandMsg();
 
+        // enter interactive env where queries are accepted from StdIn one line at a time
         while(s.hasNext()) {
             String q = s.nextLine();
             parser.decodeQuery(q);
         }
 
-    }
-
-    static class enterCommand extends TimerTask {
-        public void run() {
-            PrettyPrinter.enterCommandMsg();
-        }
     }
 }
