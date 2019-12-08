@@ -12,10 +12,17 @@ public class Moving {
     private Database db;
 
     private enum Op{
+        /**
+         * operator enum
+         * */
         AVG, SUM;
     }
 
     public Moving(Database db){
+        /**
+         * constructor
+         * @param db: database to asscociated the moving aggregates with
+         * */
         this.db = db;
     }
 
@@ -32,6 +39,10 @@ public class Moving {
     }
 
     public void movavg(String s){
+        /**
+         * query syntax:
+         * <toTable> := movavg(<fromTable>, <col>, <window_len>)
+         * */
         try {
             apply(s, Op.AVG);
         }catch(Exception e){
@@ -39,10 +50,11 @@ public class Moving {
         }
     }
 
-    // UPDATED
     private void apply(String s, Op op){
         /**
-         *  TODO: preserve indexed order
+         * internal function that applies MOVSUM or MOVAVG
+         * @param s: query string, raw
+         * @param op: operator enum, AVG for movavg, SUM for movsum
          * */
         String btwParens, toTable;
         Table fromTable;
@@ -51,15 +63,10 @@ public class Moving {
 
         try {
             btwParens = Parser.get_conditions(s);
-           // System.out.println("Between parens: " + btwParens);
             toTable = Parser.get_toTable(s);
-            //System.out.println("To table: " + toTable);
             fromTable = Utils.getFromTable(btwParens, db);
             col = Utils.getCol(btwParens, db);
-            //System.out.println("from table: " + fromTable.name);
-            //System.out.println("WINDOW: " + Utils.getNthArg(s, 3));
             window = Integer.valueOf(Utils.getNthArg(s, 3));
-            //System.out.println("WINDOW: " + window);
         }catch (Exception e){
             System.out.println("Error encountered parsing the query.");
             return;
@@ -68,11 +75,10 @@ public class Moving {
         assert window >= 1;  // to prevent divide by 0 error when computing average
 
         try{
-            // TODO newTable
+            // create newTable
             db.newEmptyTable(toTable);
 
-            //System.out.println("StaticTable created.");
-            // TODO schema
+            // set up schema
             String[] cols = new String[fromTable.getSchema().size()+1];
             String[] projects = new String[cols.length];
             int i = 0;
@@ -84,10 +90,9 @@ public class Moving {
                 cols[i] = "mov_sum";
             else cols[i] = "mov_avg";
 
-            //System.out.println("Schema prepared.");
             int newColNum = i+1;
 
-            // TODO data
+            // populate the table with data
             db.getTable(toTable).initializeDataMatrix(new String[newColNum][fromTable.getTableSize()]);
             String[][] todata = db.getData(toTable);
             String[][] fromdata = fromTable.getData();
@@ -95,11 +100,7 @@ public class Moving {
                 todata[j] = fromdata[j];
             }
 
-            //System.out.println("from table size: " + fromdata.length + fromdata[0].length);
-            //System.out.println("to table size: " + todata.length + todata[0].length);
-
             db.setSchema(cols, toTable);
-            //System.out.println("Schema set up.");
 
             int mov_col;
             if(op == Op.SUM)
@@ -108,15 +109,6 @@ public class Moving {
                 mov_col = db.getTable(toTable).getSchema().get("mov_avg");
             String[] mov = db.getTable(toTable).getData()[mov_col]; // mov_sum column
 
-            //for(String n: db.getTable(toTable).getSchema().keySet()){
-            //    System.out.println("result table col: "+ n);
-            //}
-            // TODO populate table
-            // TODO -- WRONG?? NEW COLUMN HASN'T BEEN ADDED YET??
-            //db.projectTable(fromTable.name, toTable, projects);
-
-
-            // TODO compute moving sum
             Deque<Integer> Q = new LinkedList<Integer>();
 
             // INITIALIZE INDEX TO ITS PHYSICAL ORDERING
@@ -137,10 +129,8 @@ public class Moving {
                 else if(op == Op.AVG)
                     mov[ind] = String.valueOf((double)sum / (double)Q.size());
             }
-            // TODO copy index from fromTable to toTable
             db.getTable(toTable).index = fromTable.index;
 
-            // TODO print table
             db.getTable(toTable).printData();
 
         } catch (Exception e) {
@@ -149,6 +139,9 @@ public class Moving {
     }
 
     private Integer sumDeque(Deque<Integer> Q){
+        /**
+         * private utility function that sums the entries in a queue
+         * */
         Integer sum = 0;
         for(Integer i: Q)
             sum += i;

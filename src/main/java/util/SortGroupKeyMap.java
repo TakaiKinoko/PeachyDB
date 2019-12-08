@@ -27,12 +27,6 @@ public class SortGroupKeyMap {
             sortedMap.put(entry.getKey(), entry.getValue());
         }
 
-        /*
-        //classic iterator example
-        for (Iterator<Map.Entry<String, Integer>> it = list.iterator(); it.hasNext(); ) {
-            Map.Entry<String, Integer> entry = it.next();
-            sortedMap.put(entry.getKey(), entry.getValue());
-        }*/
 
         return sortedMap;
     }

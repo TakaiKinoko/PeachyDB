@@ -6,20 +6,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Parser {
-    /**
-     * TODO: add to README
-     *
-     * Characteristics of the expressions:
-     * recursive on the boolean (and|or) level (meaning that there can be strings like: (a and (b or (d and e))))
-     * but flat on once go inside the arithmetic level (meaning it can only be e.g. (_x == _y))
-     * extra note is that on each side of the arithmetic operator, the format is: (Column | Constant) [+|-|*] (Column | Constant)
-     *
-     * Parsing strategy
-     * First: recursively descend into arithmetic level
-     * Then: parse arithmetic expression
-     *
-     * */
-
     private static final Pattern OR_p = Pattern.compile("(.+)(or)(.+)");
     private static final Pattern AND_p = Pattern.compile("(.+)(and)(.+)");
     private static final Pattern ARITH_P = Pattern.compile("([^><!=]+)([><!=]+)([^><!=]+)");
@@ -95,12 +81,10 @@ public class Parser {
             res[0] = or.group(1).trim();
             res[1] = or.group(2).trim();
             res[2] = or.group(3).trim();
-            //System.out.println("OR: " + res[0] + "|" + res[1] + "|" + res[2]);
         }else if(and.matches()){
             res[0] = and.group(1).trim();
             res[1] = and.group(2).trim();
             res[2] = and.group(3).trim();
-            //System.out.println("AND: " + res[0] + "|" + res[1] + "|" + res[2]);
         }else{
             System.out.println("Error occurred while processing boolean expressions");
         }
@@ -115,50 +99,24 @@ public class Parser {
          *
          * not fault proof. should check that the string doesn't contain boolean operators before calling this function
          * */
-        //System.out.println("DEBUG: "+ s);
         Cond[] conds = new Cond[3];
         String[] res = new String[3];
         Matcher arith = ARITH_P.matcher(s);
         if(arith.matches()) {
-            //System.out.println("\noperand: " + arith.group(1).trim() +"\noperator: " + arith.group(2).trim() + "\noperand: " + arith.group(3).trim());
-
             res[0] = arith.group(1).trim();
             conds[0] = transformArithOp(res[0], true);
-            //System.out.println(conds[0].toString());
 
             res[1] = arith.group(2).trim();
             conds[1] = new Cond(res[1], true, false);
-            //System.out.println(conds[1].toString());
 
             res[2] = arith.group(3).trim();
             conds[2] = transformArithOp(res[2], false);
-            //System.out.println(conds[2].toString());
         }else{
             System.out.println("Error occurred while processing arithmetic expressions");
         }
         return conds;
     }
 
-    public static String[] arith_match_old(String s) {
-        /**
-         * s syntax: <operand> <op> <operand>
-         *
-         * matching the bottom level arithmetic expression out of the string
-         *
-         * not fault proof. should check that the string doesn't contain boolean operators before calling this function
-         * */
-        //System.out.println("DEBUG: "+ s);
-        String[] res = new String[3];
-        Matcher arith = ARITH_P.matcher(s);
-        if(arith.matches()) {
-            res[0] = arith.group(1).trim();
-            res[1] = arith.group(2).trim();
-            res[2] = arith.group(3).trim();
-        }else{
-            System.out.println("Error occurred while processing arithmetic expressions");
-        }
-        return res;
-    }
 
     private static Cond transformArithOp(String operand, boolean leftOfOp){
         /**
@@ -170,18 +128,13 @@ public class Parser {
         // if consOpCons, combine
         Matcher cons_m = consOpCons_p.matcher(trim_cond(operand)); // CONSTANT ARITHOP CONSTANT
         Matcher col_m = colOpCons_p.matcher(trim_cond(operand));
-        //System.out.println("======" + operand + "======");
+
         if(cons_m.matches()){
-            //System.out.println("CONSTANT op CONSTANT");
+
             Double cons1 = Double.valueOf(cons_m.group(1).trim());
             String op = cons_m.group(2).trim();
             Double cons2 = Double.valueOf(cons_m.group(3).trim());
-            /*
-            System.out.println("=========================");
-            System.out.println(cons1);
-            System.out.println(op);
-            System.out.println(cons2);
-            System.out.println("========================="); */
+
             switch(op.trim()){
                 case("+"):
                     return new Cond(String.valueOf(cons1+cons2));
@@ -204,19 +157,8 @@ public class Parser {
             String col = col_m.group(1).trim();
             String op = col_m.group(2).trim();
             Double cons2 = Double.valueOf(col_m.group(3).trim());
-            //System.out.println("COLUMN op CONSTANT");
-            /*
-            System.out.println("=========================");
-            System.out.println(col);
-            System.out.println(op);
-            System.out.println(cons2);
-            System.out.println("========================="); */
             return new Cond(col, op, cons2);
         }else{
-            //System.out.println("ONLY ONE COLUMN/CONSTANT");
-            /*System.out.println("=========================");
-            System.out.println(operand);
-            System.out.println("=========================");*/
             if(leftOfOp)
                 return new Cond(operand, false, false);
             else
@@ -232,18 +174,10 @@ public class Parser {
         CONSTANT, COLUMNOP, OP, COLUMN;
     }
 
-    public static String[] decomposeOperand(String s){
-        /**
-         * s syntax: <table_name>.<col_name>
-         * */
-        s = trim_cond(s);
-        return s.split("\\.");
-    }
 
     public static String[] decomposeOperandFromCond(Cond c){
         assert c.type == Type.CONSTANT || c.type == Type.COLUMN || c.type == Type.COLUMNOP;
 
-        //System.out.println("INSIDE decomposeOperand : " + c.col);
         if(c.type == Type.CONSTANT)
             // the rhs of the arithop will be registered as CONSTANT
             return c.constant.split("\\.");

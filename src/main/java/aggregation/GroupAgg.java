@@ -13,11 +13,21 @@ public class GroupAgg {
     }
 
     public GroupAgg(Database db){
+        /**
+         * constructor
+         * @param db: database to associated group aggregates with
+         * */
         this.db = db;
     }
 
     public void sumgroup(String s){
-        //try {
+        /**
+         * sum the values of a column from a table
+         * @param s: query string
+         *
+         * s formax: <to_table> := sumgroup(<from_table>, <column_name>, <groupby_col1>, ..., <groupby_coln>)
+         * */
+        try {
             String name = Parser.get_toTable(s);
             db.newEmptyTable(name);
             Table target = db.getTable(name);
@@ -26,12 +36,9 @@ public class GroupAgg {
 
             int cols = target.getSchema().size(); // number of groupby cols
             String[][] data = new String[cols][res.size()];
-            // compute sum for each group\\
+            // compute sum for each group
             int cnt = 0;
             for(GroupKey k: res.keySet()){
-                //int cnt = 0;
-                //for(Object g: k.getKey())
-                //    System.out.print(g + " ");
                 ArrayList box = res.get(k);
                 Double sum = Utils.calculateSumList(box);
                 int i;
@@ -42,15 +49,19 @@ public class GroupAgg {
             }
             target.updateData(data);
             target.printData();
-            //Variable var = new Variable(Parser.get_toTable(s), res);
-            //db.newVariable(var);
-        //} catch (Exception e) {
-           // System.out.println("Exception ");
-        //}
+        } catch (Exception e) {
+            System.out.println("Exception ");
+        }
     }
 
     public void avggroup(String s){
-        //try {
+        /**
+         * compute the avg the values of a column from a table grouped on an ordered list of group conditions
+         * @param s: query string
+         *
+         * s formax: <to_table> := avggroup(<from_table>, <column_name>, <groupby_col1>, ..., <groupby_coln>)
+         * */
+        try {
             String name = Parser.get_toTable(s);
             db.newEmptyTable(name);
             Table target = db.getTable(name);
@@ -58,9 +69,7 @@ public class GroupAgg {
             // toGroups will initialize the data matrix and schema
             Map<GroupKey<String>, ArrayList> res = toGroups(s, target,"avg");
 
-            //target.setSchema(new String[]{"group", "avg"});
             int cols = target.getSchema().size(); // number of groupby cols plus avg col
-            //System.out.println("Schema size: " + cols);
             String[][] data = new String[cols][res.size()];
 
             // compute sum for each group
@@ -79,12 +88,18 @@ public class GroupAgg {
 
             target.printData();
 
-        //} catch (Exception e) {
-       //     System.out.println("Exception ");
-       // }
+        } catch (Exception e) {
+            System.out.println("Exception ");
+        }
     }
 
     public void countgroup(String s){
+        /**
+         * count the number of entries of a column from a table grouped on an ordered list of columns serving as grouping conditions
+         * @param s: query string
+         *
+         * s formax: <to_table> := countgroup(<from_table>, <column_name>, <groupby_col1>, ..., <groupby_coln>)
+         * */
         try {
             String name = Parser.get_toTable(s);
             db.newEmptyTable(name);
@@ -98,11 +113,8 @@ public class GroupAgg {
             // compute sum for each group
             int cnt = 0;
             for(GroupKey k: res.keySet()){
-                //for(Object g: k.getKey())
-                //    System.out.print(g + " ");
                 ArrayList box = res.get(k);
                 int count = box.size();
-                //String[] entry = new String[cols];
                 int i;
                 for(i = 0; i < cols-1; i++)
                     data[i][cnt] = String.valueOf(k.getKey()[i]);
@@ -117,7 +129,6 @@ public class GroupAgg {
         }
     }
 
-    // UPDATED
     public TreeMap<GroupKey<String>, ArrayList> groupby(Table tb, int target, String[] groupby, Map_type t, boolean get_index){
         /**
          * Group by one column at a time.
@@ -131,12 +142,7 @@ public class GroupAgg {
          * determined by the unique combination of groupby constraint tuple
          * */
         TreeMap<GroupKey<String>, ArrayList> res;
-
-        //if(t == Map_type.TREE)
         res = new TreeMap<>(new GroupKeyComp());
-        //else
-            //res = new HashMap<>();
-
 
         String[][] data;
         try {
@@ -147,33 +153,19 @@ public class GroupAgg {
         }
 
         int table_size = tb.getTableSize();
-        // get index column of the data
-        //ArrayList index = data.get(0);
 
         // get the numbers of the columns that serve as the groupby condition
         int[] gb_cond = new int[groupby.length];
-        //System.out.println("~~~" + gb_cond.length + "~~~");
         for(int i = 0; i < groupby.length; i++){
             gb_cond[i] = tb.getSchema().get(groupby[i]);
-            //System.out.println("..." + gb_cond[i] + "...");
         }
 
-        //String[] target_col = data[target];
-
         int ind, cnt;
-        //try {
+        try {
             for (ind = 0; ind < table_size; ind++) {
-                //ind = (Integer)i;  // get row index
-                /*System.out.println(groupby.length);
-                for(int i : gb_cond)
-                    System.out.print(data[i][ind]);
-                System.out.println();
-                */
-
                 String[] comp = new String[groupby.length];
                 cnt = 0;
                 for (int col : gb_cond) {
-                    //System.out.println(data[col][ind]);
                     comp[cnt] = data[col][ind];
                     cnt++;
                 }
@@ -187,16 +179,10 @@ public class GroupAgg {
                 res.put(key, box);
             }
 
-            // TODO delete
-            /*
-            for(GroupKey k: res.keySet()){
-                System.out.println(k.toString());
-                System.out.println(res.get(k));
-            }*/
-       // }catch (Exception e){
-       //     System.out.println("Couldn't read from target table.");
-       //     return res;
-       // }
+        }catch (Exception e){
+            System.out.println("Couldn't read from target table.");
+            return res;
+       }
 
         return res;
     }
@@ -206,15 +192,12 @@ public class GroupAgg {
          * @param op is one of  {"avg", "sum", "count"}
          * */
         try{
-            String toVar = Parser.get_toTable(s);
             String btwParens = Parser.get_conditions(s);
-            ArrayList col;
             Map<GroupKey<String>, ArrayList> res;
 
             String[] inside = btwParens.split(",");
             Table fromTable = db.getTable(inside[0].trim());
             Integer target = fromTable.getSchema().get(inside[1].trim());
-            //System.out.println("Target: " + fromTable.getSchema().get(target));
             String[] groupby = new String[inside.length - 2];
 
             //System.out.print("Group columns ");
@@ -231,7 +214,6 @@ public class GroupAgg {
                 schema[i] = "groupby_" + groupby[i];
             schema[i] = op + "_" + inside[1].trim();
             tb.setSchema(schema);
-
 
             return res;
         }catch (Exception e) {

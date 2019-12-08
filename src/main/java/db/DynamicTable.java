@@ -6,6 +6,10 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public class DynamicTable {
+    /**
+     * Internally used table that adjusts its size dynamically
+     * A static table (Table.java) will replace DynamicTable at the end of each operation
+     * */
     private ArrayList<ArrayList> data;
     private Map<String, Integer> schema;
     public String name;
@@ -31,7 +35,6 @@ public class DynamicTable {
                 td[i][j] = String.valueOf(l.get(j));
         }
 
-        //target.printData();
     }
 
     public void setSchema(Map<String, Integer> schema){

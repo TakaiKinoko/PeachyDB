@@ -1,0 +1,644 @@
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="file:///Users/fanghan/.markdownNavigator/multimarkdown_layout.css">
+  <style>
+    body.multimarkdown-preview,
+    body.multimarkdown-wiki-preview {
+      font-size: 11px;
+    }
+  </style>
+  <link rel="stylesheet" href="file:///Users/fanghan/.markdownNavigator/multimarkdown_darcula.css">
+</head>
+
+<body class="multimarkdown-preview">
+  <div class="content">
+    <div class="page-header">README_.md</div>
+    <div class="hr"></div>
+    <h1 id="peachydb-a-miniature-relational-database" md-pos="2-43"><a href="#peachydb-a-miniature-relational-database"
+        name="peachydb-a-miniature-relational-database">PeachyDB: a miniature relational database</a></h1>
+    <ul>
+      <li md-pos="46-65" class="p">
+        <p md-pos="48-65" class="p">Author: Fang Han</p>
+      </li>
+      <li md-pos="66-77" class="p">
+        <p md-pos="68-77" class="p">2019.11</p>
+      </li>
+      <li md-pos="78-112" class="p">
+        <p md-pos="80-112" class="p">Database Systems @ NYU Courant</p>
+      </li>
+    </ul>
+    <h2 id="table-of-contents" md-pos="116-133"><a href="#table-of-contents" name="table-of-contents">TABLE OF
+        CONTENTS</a></h2>
+    <ol>
+      <li md-pos="134-208"><a href="README.md#instructions-for-graders" md-pos="137-207">SPECIAL INSTRUCTIONS FOR
+          GRADERS</a></li>
+      <li md-pos="208-258"><a href="README.md#QUERIES-SUPPORTED" md-pos="211-257">LIST OF QUERIES</a></li>
+      <li md-pos="258-424"><a href="README.md#SETUP" md-pos="261-285">SETUP</a>
+        <ol>
+          <li md-pos="290-360"><a href="README.md#compile-and-run-with-maven" md-pos="293-359">compile and run with
+              maven</a></li>
+          <li md-pos="364-424"><a href="README.md#run-with-shell-script" md-pos="367-423">run with shell script</a></li>
+        </ol>
+      </li>
+      <li md-pos="424-807"><a href="README.md#DOCUMENTATION" md-pos="427-467">DOCUMENTATION</a>
+        <ol>
+          <li md-pos="472-536"><a href="README.md#table-naming-convention" md-pos="475-535">table naming convention</a>
+          </li>
+          <li md-pos="540-572"><a href="README.md#I/O" md-pos="543-571">I/O queries</a></li>
+          <li md-pos="576-620"><a href="README.md#algebraic" md-pos="579-619">algebraic queries</a></li>
+          <li md-pos="624-668"><a href="README.md#aggregate" md-pos="627-667">aggregate queries</a></li>
+          <li md-pos="672-731"><a href="README.md#moving-aggregates" md-pos="675-730">moving aggregate queries</a></li>
+          <li md-pos="735-763"><a href="README.md#index" md-pos="738-762">index</a></li>
+          <li md-pos="767-807"><a href="README.md#utility" md-pos="770-806">utility queries</a></li>
+        </ol>
+      </li>
+      <li md-pos="807-841"><a href="README.md#FEATURES" md-pos="810-840">FEATURES</a></li>
+      <li md-pos="841-879"><a href="README.md#STATISTICS" md-pos="844-878">STATISTICS</a></li>
+    </ol>
+    <h2 id="special-instructions-for-graders" md-pos="883-915"><a href="#special-instructions-for-graders"
+        name="special-instructions-for-graders">SPECIAL INSTRUCTIONS FOR GRADERS</a></h2>
+    <ul>
+      <li md-pos="917-952" class="p">
+        <p md-pos="919-952" class="p">step 0：unzip the <code md-pos="939-943">.rpz</code> file</p>
+      </li>
+      <li md-pos="953-1011" class="p">
+        <p md-pos="955-1011" class="p">step 1: put all <strong md-pos="973-983">input data</strong> files under <code
+            md-pos="1001-1007">input/</code></p>
+      </li>
+      <li md-pos="1012-1077" class="p">
+        <p md-pos="1014-1077" class="p">step 2: put the file containin test queries under <code
+            md-pos="1067-1073">input/</code></p>
+      </li>
+      <li md-pos="1078-1179" class="p">
+        <p md-pos="1080-1179" class="p">step 3: open <code md-pos="1096-1112">input/input_pipe</code>, change the 2nd
+          line to match the name of the query file above</p>
+      </li>
+      <li md-pos="1180-1222" class="p">
+        <p md-pos="1182-1222" class="p">step 4: at root dir, run <code md-pos="1210-1218">./run.sh</code></p>
+      </li>
+      <li md-pos="1223-1281" class="p">
+        <p md-pos="1225-1281" class="p">After the above steps, find outputs under <code
+            md-pos="1270-1277">output/</code></p>
+      </li>
+    </ul>
+    <h2 id="queries-supported" md-pos="1285-1302"><a href="#queries-supported" name="queries-supported">QUERIES
+        SUPPORTED</a></h2>
+    <ol>
+      <li md-pos="1304-1343"><a href="README.md#show-tables" md-pos="1307-1342">showtables</a></li>
+      <li md-pos="1343-1383"><a href="README.md#show-schemas" md-pos="1346-1382">showschema</a></li>
+      <li md-pos="1383-1409"><a href="README.md#quit" md-pos="1386-1408">quit</a></li>
+      <li md-pos="1409-1454"><a href="README.md#read-from-file" md-pos="1412-1453">inputfromfile</a></li>
+      <li md-pos="1454-1503"><a href="README.md#write-table-to-file" md-pos="1457-1502">outputtofile</a></li>
+      <li md-pos="1503-1533"><a href="README.md#select" md-pos="1506-1532">select</a></li>
+      <li md-pos="1533-1565"><a href="README.md#project" md-pos="1536-1564">project</a></li>
+      <li md-pos="1565-1591"><a href="README.md#join" md-pos="1568-1590">join</a></li>
+      <li md-pos="1591-1621"><a href="README.md#concat" md-pos="1594-1620">concat</a></li>
+      <li md-pos="1621-1647"><a href="README.md#sort" md-pos="1624-1646">sort</a></li>
+      <li md-pos="1647-1675"><a href="README.md#count" md-pos="1650-1674">count</a></li>
+      <li md-pos="1675-1699"><a href="README.md#sum" md-pos="1678-1698">sum</a></li>
+      <li md-pos="1699-1723"><a href="README.md#avg" md-pos="1702-1722">avg</a></li>
+      <li md-pos="1723-1761"><a href="README.md#countgroup" md-pos="1726-1760">countgroup</a></li>
+      <li md-pos="1761-1795"><a href="README.md#sumgroup" md-pos="1764-1794">sumgroup</a></li>
+      <li md-pos="1795-1829"><a href="README.md#avggroup" md-pos="1798-1828">avggroup</a></li>
+      <li md-pos="1829-1867"><a href="README.md#moving-average" md-pos="1832-1866">movavg</a></li>
+      <li md-pos="1867-1901"><a href="README.md#moving-sum" md-pos="1870-1900">movsum</a></li>
+      <li md-pos="1901-1928"><a href="README.md#hash" md-pos="1904-1926">hash</a></li>
+      <li md-pos="1928-1956"><a href="README.md#btree" md-pos="1931-1955">btree</a></li>
+    </ol>
+    <h2 id="setup" md-pos="1960-1965"><a href="#setup" name="setup">SETUP</a></h2>
+    <h3 id="compile-and-run-with-maven" md-pos="1971-1997"><a href="#compile-and-run-with-maven"
+        name="compile-and-run-with-maven">compile and run with maven</a></h3>
+    <ul>
+      <li md-pos="1999-2015">download repo</li>
+    </ul>
+    <pre md-pos="2015-2079"><code md-pos="2019-2075">$ git clone https://github.com/TakaiKinoko/PeachyDB.git
+</code></pre>
+    <ul>
+      <li md-pos="2080-2090">compile</li>
+    </ul>
+    <pre md-pos="2090-2127"><code md-pos="2094-2123">$ cd PeachyDB
+$ mvn compile 
+</code></pre>
+    <ul>
+      <li md-pos="2128-2140">build jar</li>
+    </ul>
+    <pre md-pos="2140-2162"><code md-pos="2144-2158">$ mvn package
+</code></pre>
+    <ul>
+      <li md-pos="2163-2183">run interactively</li>
+    </ul>
+    <pre md-pos="2183-2232"><code md-pos="2187-2228">$ java -cp target/peachyDB-1.0.jar Entry
+</code></pre>
+    <ul>
+      <li md-pos="2233-2304" class="p">
+        <p md-pos="2235-2253" class="p">exit the database</p>
+        <p md-pos="2258-2304">type <code md-pos="2266-2270">quit</code> when the database is running.</p>
+      </li>
+    </ul>
+    <h3 id="run-with-shell-script" md-pos="2309-2330"><a href="#run-with-shell-script" name="run-with-shell-script">run
+        with shell script</a></h3>
+    <ul>
+      <li md-pos="2332-2357" class="p">
+        <p md-pos="2334-2357" class="p"><code md-pos="2337-2345">./run.sh</code> at root</p>
+      </li>
+      <li md-pos="2358-2490" class="p">
+        <p md-pos="2360-2490" class="p">this will feed all query lines from <code
+            md-pos="2399-2412">input/handout</code> to the database and direct <strong
+            md-pos="2445-2451">stdout</strong> to <code md-pos="2460-2486">output/fh643_AllOperations</code></p>
+      </li>
+    </ul>
+    <h2 id="documentation" md-pos="2495-2508"><a href="#documentation" name="documentation">DOCUMENTATION</a></h2>
+    <h3 id="table-naming-convention" md-pos="2514-2537"><a href="#table-naming-convention"
+        name="table-naming-convention">table naming convention</a></h3>
+    <ul>
+      <li md-pos="2539-2580" class="p">
+        <p md-pos="2541-2580" class="p">has to start with an alphabetic letter</p>
+      </li>
+      <li md-pos="2580-2641" class="p">
+        <p md-pos="2582-2641" class="p">syntax using regular expression:
+          <code md-pos="2622-2637">([a-zA-Z]+(.)*)</code></p>
+      </li>
+      <li md-pos="2642-3023" class="p">
+        <p md-pos="2644-2663" class="p">derivative tables:</p>
+        <ul>
+          <li md-pos="2672-2764" class="p">
+            <p md-pos="2675-2764" class="p"><strong md-pos="2677-2687">definition</strong>: tables that are built 'on
+              top of' another (more than one) existing table</p>
+          </li>
+          <li md-pos="2769-2907" class="p">
+            <p md-pos="2771-2907" class="p">to differentiate the derivative table columns from its parent(s), it's
+              column names have the format of <code md-pos="2877-2903">&lt;table_name&gt;_&lt;column_name&gt;</code></p>
+          </li>
+          <li md-pos="2912-3023" class="p">
+            <p md-pos="2914-3023" class="p">queries on the derivative tables should make sure that the columns are
+              addressed according to the rule above</p>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <h3 id="io" md-pos="3028-3031"><a href="#io" name="io">I/O</a></h3>
+    <h4 id="read-from-file" md-pos="3038-3052"><a href="#read-from-file" name="read-from-file">read from file</a></h4>
+    <ul>
+      <li md-pos="3055-3113" class="p">
+        <p md-pos="3057-3113" class="p">syntax: <code
+            md-pos="3068-3109">&lt;table_name&gt; := inputfromfile(&lt;filepath&gt;)</code></p>
+      </li>
+      <li md-pos="3114-3159" class="p">
+        <p md-pos="3116-3159" class="p">implementation: under <code md-pos="3141-3155">src/io/IO.java</code></p>
+      </li>
+      <li md-pos="3160-5707" class="p">
+        <p md-pos="3162-3169" class="p">note:</p>
+        <ol>
+          <li md-pos="3174-3237" class="p">
+            <p md-pos="3177-3237" class="p">a <code md-pos="3182-3192">&lt;filepath&gt;</code> must be assigned to a
+              <code md-pos="3221-3233">&lt;table_name&gt;</code></p>
+          </li>
+          <li md-pos="3244-3399" class="p">
+            <p md-pos="3247-3399" class="p">the database at default tries to read files from the <code
+                md-pos="3303-3309">/input</code> folder. So <code md-pos="3327-3337">&lt;filepath&gt;</code> should be
+              the relative path from <code md-pos="3377-3383">/input</code> to the file</p>
+          </li>
+          <li md-pos="3406-3457" class="p">
+            <p md-pos="3409-3457" class="p">reading in a new file will create a new table.</p>
+          </li>
+          <li md-pos="3466-5707" class="p">
+            <p md-pos="3469-3588" class="p">a <strong md-pos="3473-3487">truncated view</strong> of the table will be
+              printed out to StdOut once data has been read in successfully, for example:</p>
+            <pre md-pos="3596-5708"><code class="$xslt" md-pos="3613-5696">reading from file: input/sales2.txt into table: S...
+
++----------+---------+---------+------+------+------+--------------+
+| saleid   | I       | C       | S    | T    | Q    | P            |
++----------+---------+---------+------+------+------+--------------+
+| 3506     | 13517   | 16566   | 45   | 73   | 19   | expensive    |
+| 78345    | 10528   | 4745    | 20   | 73   | 23   | supercheap   |
+| 79991    | 6715    | 707     | 75   | 41   | 34   | expensive    |
+| 90466    | 6697    | 8397    | 83   | 92   | 16   | outrageous   |
+| 22332    | 9639    | 2435    | 29   | 17   | 31   | moderate     |
+| 95047    | 11877   | 2020    | 44   | 79   | 29   | supercheap   |
+| 48867    | 12387   | 15274   | 98   | 76   | 35   | supercheap   |
+| 22220    | 10650   | 5746    | 57   | 73   | 24   | outrageous   |
+| 53696    | 9958    | 11849   | 85   | 16   | 9    | supercheap   |
+| 34328    | 11376   | 4042    | 50   | 66   | 44   | supercheap   |
+
+  ...        ...       ...       ...    ...    ...    ...          
+
+| 62617    | 10689   | 15710   | 3    | 73   | 29   | supercheap   |
+| 74088    | 6099    | 14086   | 37   | 95   | 44   | moderate     |
+| 66449    | 10137   | 2465    | 41   | 73   | 31   | cheap        |
+| 11662    | 9096    | 19072   | 6    | 16   | 21   | supercheap   |
+| 33022    | 6259    | 5746    | 54   | 11   | 44   | supercheap   |
+| 86141    | 10713   | 5746    | 71   | 73   | 4    | outrageous   |
+| 64366    | 8775    | 18198   | 43   | 61   | 49   | supercheap   |
+| 41918    | 10898   | 18816   | 61   | 92   | 18   | moderate     |
+| 43539    | 8229    | 16589   | 14   | 92   | 47   | supercheap   |
+| 2356     | 8909    | 14012   | 32   | 82   | 24   | supercheap   |
++----------+---------+---------+------+------+------+--------------+
+Number of entries: 100000
+
+Time cost: 0.1450 seconds
+</code></pre>
+          </li>
+        </ol>
+      </li>
+      <li md-pos="5709-5806" class="p">
+        <p md-pos="5711-5806" class="p">example: <code md-pos="5723-5748">inputfromfile(sales1.txt)</code>, where <code
+            md-pos="5762-5772">sales1.txt</code> is stored inside <code md-pos="5796-5802">/input</code></p>
+      </li>
+    </ul>
+    <h4 id="write-table-to-file" md-pos="5820-5839"><a href="#write-table-to-file" name="write-table-to-file">write
+        table to file</a></h4>
+    <ul>
+      <li md-pos="5841-5891" class="p">
+        <p md-pos="5843-5891" class="p">syntax: <code
+            md-pos="5854-5887">outputtofile(&lt;table&gt;, &lt;filename&gt;)</code></p>
+      </li>
+      <li md-pos="5892-5937" class="p">
+        <p md-pos="5894-5937" class="p">implementation: under <code md-pos="5919-5933">src/io/IO.java</code></p>
+      </li>
+      <li md-pos="5938-6967" class="p">
+        <p md-pos="5940-5947" class="p">note:</p>
+        <ol>
+          <li md-pos="5956-6032" class="p">
+            <p md-pos="5959-6032" class="p">the database at default tries to save files to the <code
+                md-pos="6013-6020">/output</code> folder.</p>
+          </li>
+          <li md-pos="6041-6139" class="p">
+            <p md-pos="6044-6139" class="p"><strong md-pos="6046-6059">PrettyPrinter</strong> (see <code
+                md-pos="6070-6098">/src/util/PrettyPrinter.java</code>) is used to format the output table.</p>
+          </li>
+          <li md-pos="6148-6967" class="p">
+            <p md-pos="6151-6182" class="p">sample pretty-printed result:</p>
+            <pre md-pos="6190-6968"><code class="$xslt" md-pos="6207-6956">+----------------------+----------------------+
+| groupby_pricerange   | avg_qty              |
++----------------------+----------------------+
+| cheap                | 20.546875            |
+|----------------------|----------------------|
+| expensive            | 24.954545454545453   |
+|----------------------|----------------------|
+| moderate             | 22.384615384615383   |
+|----------------------|----------------------|
+| outrageous           | 23.717047451669597   |
+|----------------------|----------------------|
+| supercheap           | 26.10126582278481    |
++----------------------+----------------------+
+Number of entries: 5
+</code></pre>
+          </li>
+        </ol>
+      </li>
+    </ul>
+    <h3 id="algebraic" md-pos="6977-6986"><a href="#algebraic" name="algebraic">algebraic</a></h3>
+    <h4 id="select" md-pos="6993-6999"><a href="#select" name="select">select</a></h4>
+    <ul>
+      <li md-pos="7001-7092" class="p">
+        <p md-pos="7003-7092" class="p">syntax: <code
+            md-pos="7014-7088">&lt;target_table&gt; := select(&lt;from_table&gt;, &lt;condition1&gt; [and/or &lt;condition2&gt;])</code>
+        </p>
+      </li>
+      <li md-pos="7093-7207" class="p">
+        <p md-pos="7095-7207" class="p">the <code md-pos="7102-7123">[and/or &lt;condition2&gt;]</code> part is
+          optional, which means this select operation takes one or two conditions</p>
+      </li>
+      <li md-pos="7208-7346" class="p">
+        <p md-pos="7210-7346" class="p">syntax of the condition: <code
+            md-pos="7238-7342">(Column | Constant) [+|-|*|/ Constant] (&lt; | &lt;= | &gt; | &gt;= | != |=) (Column | Constant) [+|-|*|/ Constant])</code>
+        </p>
+      </li>
+      <li md-pos="7347-7418" class="p">
+        <p md-pos="7349-7418" class="p">within each condition, the <code md-pos="7379-7397">[+|-|*|/ Constant]</code>
+          part is optional</p>
+      </li>
+      <li md-pos="7419-7466" class="p">
+        <p md-pos="7421-7466" class="p">implemented in <code md-pos="7439-7462">src/algebra/Select.java</code></p>
+      </li>
+      <li md-pos="7467-7526" class="p">
+        <p md-pos="7469-7526" class="p">entries selected will be deep copy from the source table</p>
+      </li>
+      <li md-pos="7527-7650" class="p">
+        <p md-pos="7529-7650" class="p">if a column within the conditions is indexed upon (by either Hash or BTree), the
+          index will be used to perform selection</p>
+      </li>
+    </ul>
+    <h4 id="project" md-pos="7656-7663"><a href="#project" name="project">project</a></h4>
+    <ul>
+      <li md-pos="7665-7742" class="p">
+        <p md-pos="7667-7742" class="p">syntax: <code
+            md-pos="7678-7738">&lt;target_table&gt; := project(&lt;from_table&gt;, &lt;col1&gt;, ..., &lt;coln&gt;)</code>
+        </p>
+      </li>
+      <li md-pos="7743-7791" class="p">
+        <p md-pos="7745-7791" class="p">implemented in <code md-pos="7763-7787">src/algebra/Project.java</code></p>
+      </li>
+      <li md-pos="7792-7879" class="p">
+        <p md-pos="7794-7879" class="p">acturally fulfilled by the function <code md-pos="7833-7845">projectTable</code>
+          in <code md-pos="7855-7875">src/db/Database.java</code></p>
+      </li>
+      <li md-pos="7880-7955" class="p">
+        <p md-pos="7882-7955" class="p">columns selected will be <strong md-pos="7909-7921">shallow copy</strong>
+          (pointer) of the source table</p>
+      </li>
+    </ul>
+    <h4 id="join" md-pos="7961-7965"><a href="#join" name="join">join</a></h4>
+    <ul>
+      <li md-pos="7967-8062" class="p">
+        <p md-pos="7969-8062" class="p">syntax: <code
+            md-pos="7980-8058">&lt;target_table&gt; := join(&lt;table1&gt;, &lt;table2&gt;, &lt;condition1&gt; [and/or &lt;condition2&gt;])</code>
+        </p>
+      </li>
+      <li md-pos="8063-8175" class="p">
+        <p md-pos="8065-8175" class="p">the <code md-pos="8072-8093">[and/or &lt;condition2&gt;]</code> part is
+          optional, which means this join operation takes one or two conditions</p>
+      </li>
+      <li md-pos="8176-8331" class="p">
+        <p md-pos="8178-8331" class="p">syntax of the condition: <code
+            md-pos="8206-8327">&lt;table_name1&gt;.&lt;column_name1&gt; ([+|-|*|/] &lt;constant1&gt;) [&gt;|&lt;|!=|=|&gt;=|&lt;=] &lt;table_name2&gt;.&lt;column_name2&gt; [+|-|*|/] &lt;constant2&gt;</code>
+        </p>
+      </li>
+      <li md-pos="8332-8407" class="p">
+        <p md-pos="8334-8407" class="p">within each condition, the <code
+            md-pos="8364-8386">([+|-|*|/] &lt;constant&gt;)</code> part is optional</p>
+      </li>
+      <li md-pos="8408-8453" class="p">
+        <p md-pos="8410-8453" class="p">implemented in <code md-pos="8428-8449">src/algebra/Join.java</code></p>
+      </li>
+    </ul>
+    <h4 id="concat" md-pos="8459-8465"><a href="#concat" name="concat">concat</a></h4>
+    <ul>
+      <li md-pos="8467-8528" class="p">
+        <p md-pos="8469-8528" class="p">syntax: <code
+            md-pos="8480-8524">&lt;target_table&gt; := concat(&lt;table1&gt;, &lt;table2&gt;)</code></p>
+      </li>
+      <li md-pos="8529-8576" class="p">
+        <p md-pos="8531-8576" class="p">implemented in <code md-pos="8549-8572">src/algebra/Concat.java</code></p>
+      </li>
+      <li md-pos="8577-8664" class="p">
+        <p md-pos="8579-8664" class="p">acturally fulfilled by the function <code md-pos="8618-8630">concatTables</code>
+          in <code md-pos="8640-8660">src/db/Database.java</code></p>
+      </li>
+    </ul>
+    <h4 id="sort" md-pos="8670-8674"><a href="#sort" name="sort">sort</a></h4>
+    <ul>
+      <li md-pos="8676-8750" class="p">
+        <p md-pos="8678-8750" class="p">syntax: <code
+            md-pos="8689-8746">&lt;target_table&gt; := sort(&lt;from_table&gt;, &lt;col1&gt;, ..., &lt;coln&gt;)</code>
+        </p>
+      </li>
+      <li md-pos="8751-8793" class="p">
+        <p md-pos="8753-8793" class="p">implemented in <code md-pos="8771-8789">src/util/Sort.java</code></p>
+      </li>
+    </ul>
+    <h3 id="aggregate" md-pos="8798-8807"><a href="#aggregate" name="aggregate">aggregate</a></h3>
+    <h4 id="count" md-pos="8814-8819"><a href="#count" name="count">count</a></h4>
+    <ul>
+      <li md-pos="8822-8888" class="p">
+        <p md-pos="8824-8888" class="p">syntax: <code
+            md-pos="8836-8884">&lt;to_table&gt; := count(&lt;from_table&gt;, &lt;column_name&gt;)</code></p>
+      </li>
+      <li md-pos="8889-8943" class="p">
+        <p md-pos="8891-8943" class="p">implemented in <code md-pos="8909-8939">src/aggregation/Aggregate.java</code>
+        </p>
+      </li>
+    </ul>
+    <h4 id="sum" md-pos="8949-8952"><a href="#sum" name="sum">sum</a></h4>
+    <ul>
+      <li md-pos="8955-9019" class="p">
+        <p md-pos="8957-9019" class="p">syntax: <code
+            md-pos="8969-9015">&lt;to_table&gt; := sum(&lt;from_table&gt;, &lt;column_name&gt;)</code></p>
+      </li>
+      <li md-pos="9020-9074" class="p">
+        <p md-pos="9022-9074" class="p">implemented in <code md-pos="9040-9070">src/aggregation/Aggregate.java</code>
+        </p>
+      </li>
+    </ul>
+    <h4 id="avg" md-pos="9080-9083"><a href="#avg" name="avg">avg</a></h4>
+    <ul>
+      <li md-pos="9086-9150" class="p">
+        <p md-pos="9088-9150" class="p">syntax: <code
+            md-pos="9100-9146">&lt;to_table&gt; := avg(&lt;from_table&gt;, &lt;column_name&gt;)</code></p>
+      </li>
+      <li md-pos="9151-9205" class="p">
+        <p md-pos="9153-9205" class="p">implemented in <code md-pos="9171-9201">src/aggregation/Aggregate.java</code>
+        </p>
+      </li>
+    </ul>
+    <h4 id="countgroup" md-pos="9211-9221"><a href="#countgroup" name="countgroup">countgroup</a></h4>
+    <ul>
+      <li md-pos="9224-9348" class="p">
+        <p md-pos="9226-9348" class="p">count the number of entries of a column from a table grouped on an ordered list
+          of columns serving as grouping conditions</p>
+      </li>
+      <li md-pos="9349-9456" class="p">
+        <p md-pos="9351-9456" class="p">syntax: <code
+            md-pos="9362-9452">&lt;to_table&gt; := countgroup(&lt;from_table&gt;, &lt;column_name&gt;, &lt;groupby_col1&gt;, ..., &lt;groupby_coln&gt;)</code>
+        </p>
+      </li>
+      <li md-pos="9457-9510" class="p">
+        <p md-pos="9459-9510" class="p">implemented in <code md-pos="9477-9506">src/aggregation/GroupAgg.java</code></p>
+      </li>
+      <li md-pos="9511-9603" class="p">
+        <p md-pos="9513-9603" class="p">based on internal method <code md-pos="9541-9548">groupby</code> implemented in
+          <code md-pos="9570-9599">src/aggregation/GroupAgg.java</code></p>
+      </li>
+    </ul>
+    <h4 id="sumgroup" md-pos="9609-9617"><a href="#sumgroup" name="sumgroup">sumgroup</a></h4>
+    <ul>
+      <li md-pos="9620-9732" class="p">
+        <p md-pos="9622-9732" class="p">compute the sum of a column from a table grouped on an ordered list of columns
+          serving as grouping conditions</p>
+      </li>
+      <li md-pos="9733-9838" class="p">
+        <p md-pos="9735-9838" class="p">syntax: <code
+            md-pos="9746-9834">&lt;to_table&gt; := sumgroup(&lt;from_table&gt;, &lt;column_name&gt;, &lt;groupby_col1&gt;, ..., &lt;groupby_coln&gt;)</code>
+        </p>
+      </li>
+      <li md-pos="9839-9892" class="p">
+        <p md-pos="9841-9892" class="p">implemented in <code md-pos="9859-9888">src/aggregation/GroupAgg.java</code></p>
+      </li>
+      <li md-pos="9893-9985" class="p">
+        <p md-pos="9895-9985" class="p">based on internal method <code md-pos="9923-9930">groupby</code> implemented in
+          <code md-pos="9952-9981">src/aggregation/GroupAgg.java</code></p>
+      </li>
+    </ul>
+    <h4 id="avggroup" md-pos="9995-10003"><a href="#avggroup" name="avggroup">avggroup</a></h4>
+    <ul>
+      <li md-pos="10006-10123" class="p">
+        <p md-pos="10008-10123" class="p">compute the average of a column from a table grouped on an ordered list of
+          columns serving as grouping conditions</p>
+      </li>
+      <li md-pos="10124-10229" class="p">
+        <p md-pos="10126-10229" class="p">syntax: <code
+            md-pos="10137-10225">&lt;to_table&gt; := avggroup(&lt;from_table&gt;, &lt;column_name&gt;, &lt;groupby_col1&gt;, ..., &lt;groupby_coln&gt;)</code>
+        </p>
+      </li>
+      <li md-pos="10230-10283" class="p">
+        <p md-pos="10232-10283" class="p">implemented in <code md-pos="10250-10279">src/aggregation/GroupAgg.java</code>
+        </p>
+      </li>
+      <li md-pos="10284-10376" class="p">
+        <p md-pos="10286-10376" class="p">based on internal method <code md-pos="10314-10321">groupby</code> implemented
+          in <code md-pos="10343-10372">src/aggregation/GroupAgg.java</code></p>
+      </li>
+    </ul>
+    <h3 id="moving-aggregates" md-pos="10381-10398"><a href="#moving-aggregates" name="moving-aggregates">moving
+        aggregates</a></h3>
+    <h4 id="moving-average" md-pos="10405-10419"><a href="#moving-average" name="moving-average">moving average</a></h4>
+    <ul>
+      <li md-pos="10421-10491" class="p">
+        <p md-pos="10423-10491" class="p">syntax: <code
+            md-pos="10434-10487">&lt;toTable&gt; := movavg(&lt;fromTable&gt;, &lt;col&gt;, &lt;window_len&gt;)</code>
+        </p>
+      </li>
+      <li md-pos="10492-10543" class="p">
+        <p md-pos="10494-10543" class="p">implemented in <code md-pos="10512-10539">src/aggregation/Moving.java</code>
+        </p>
+      </li>
+      <li md-pos="10544-10636" class="p">
+        <p md-pos="10546-10636" class="p">fulfilled by private internal method <code md-pos="10586-10591">apply</code>
+          within <code md-pos="10605-10632">src/aggregation/Moving.java</code></p>
+      </li>
+    </ul>
+    <h4 id="moving-sum" md-pos="10642-10652"><a href="#moving-sum" name="moving-sum">moving sum</a></h4>
+    <ul>
+      <li md-pos="10654-10724" class="p">
+        <p md-pos="10656-10724" class="p">syntax: <code
+            md-pos="10667-10720">&lt;toTable&gt; := movsum(&lt;fromTable&gt;, &lt;col&gt;, &lt;window_len&gt;)</code>
+        </p>
+      </li>
+      <li md-pos="10725-10776" class="p">
+        <p md-pos="10727-10776" class="p">implemented in <code md-pos="10745-10772">src/aggregation/Moving.java</code>
+        </p>
+      </li>
+      <li md-pos="10777-10869" class="p">
+        <p md-pos="10779-10869" class="p">fulfilled by private internal method <code md-pos="10819-10824">apply</code>
+          within <code md-pos="10838-10865">src/aggregation/Moving.java</code></p>
+      </li>
+    </ul>
+    <h3 id="index" md-pos="10874-10879"><a href="#index" name="index">index</a></h3>
+    <h4 id="hash" md-pos="10886-10890"><a href="#hash" name="hash">hash</a></h4>
+    <ul>
+      <li md-pos="10892-10932" class="p">
+        <p md-pos="10894-10932" class="p">syntax: <code md-pos="10905-10928">Hash(&lt;table&gt;, &lt;column&gt;)</code>
+        </p>
+      </li>
+      <li md-pos="10933-11018" class="p">
+        <p md-pos="10935-11018" class="p">implemented in <code md-pos="10953-10972">src/index/Hash.java</code> through
+          Java's native <code md-pos="11001-11008">HashMap</code> class</p>
+      </li>
+    </ul>
+    <h4 id="btree" md-pos="11024-11029"><a href="#btree" name="btree">btree</a></h4>
+    <ul>
+      <li md-pos="11031-11072" class="p">
+        <p md-pos="11033-11072" class="p">syntax: <code md-pos="11044-11068">Btree(&lt;table&gt;, &lt;column&gt;)</code>
+        </p>
+      </li>
+      <li md-pos="11073-11117" class="p">
+        <p md-pos="11075-11117" class="p">implemented in <code md-pos="11093-11113">src/index/Btree.java</code></p>
+      </li>
+      <li md-pos="11118-11158" class="p">
+        <p md-pos="11120-11158" class="p">Btree implementation: <code md-pos="11145-11154">src/btree</code></p>
+      </li>
+    </ul>
+    <h3 id="utility" md-pos="11163-11170"><a href="#utility" name="utility">utility</a></h3>
+    <h4 id="quit" md-pos="11177-11181"><a href="#quit" name="quit">quit</a></h4>
+    <ul>
+      <li md-pos="11183-11221" class="p">
+        <p md-pos="11185-11221" class="p">syntax: <code md-pos="11197-11201">quit</code> or <code
+            md-pos="11213-11217">Quit</code></p>
+      </li>
+      <li md-pos="11222-11269" class="p">
+        <p md-pos="11224-11269" class="p">implemented in <code md-pos="11242-11265">src/io/QueryParser.java</code></p>
+      </li>
+    </ul>
+    <h4 id="show-tables" md-pos="11275-11286"><a href="#show-tables" name="show-tables">show tables</a></h4>
+    <ul>
+      <li md-pos="11288-11318" class="p">
+        <p md-pos="11290-11318" class="p">syntax: <code md-pos="11301-11313">showtables()</code></p>
+      </li>
+      <li md-pos="11319-11363" class="p">
+        <p md-pos="11321-11363" class="p">implemented in <code md-pos="11339-11359">src/db/Database.java</code></p>
+      </li>
+      <li md-pos="11364-11774" class="p">
+        <p md-pos="11366-11382" class="p">sample output:</p>
+        <pre md-pos="11386-11775"><code md-pos="11394-11767">+-----------+----------+
+| Table     | Size     |
++-----------+----------+
+| R2        | 900      |
+| R         | 1000     |
+| S         | 100000   |
+| T         | 3642     |
+| T2prime   | 391      |
+| T1        | 391      |
+| T2        | 391      |
+| R1        | 900      |
+| T3        | 391      |
++-----------+----------+
+</code></pre>
+      </li>
+    </ul>
+    <h4 id="show-schemas" md-pos="11781-11793"><a href="#show-schemas" name="show-schemas">show schemas</a></h4>
+    <ul>
+      <li md-pos="11795-11824" class="p">
+        <p md-pos="11797-11824" class="p">syntax: <code md-pos="11808-11820">showschema()</code></p>
+      </li>
+      <li md-pos="11825-11869" class="p">
+        <p md-pos="11827-11869" class="p">implemented in <code md-pos="11845-11865">src/db/Database.java</code></p>
+      </li>
+      <li md-pos="11870-12432" class="p">
+        <p md-pos="11872-11889" class="p">sample output:</p>
+        <pre md-pos="11893-12433"><code md-pos="11901-12425">+---------+-----------------------------------------------------------------------+
+| Table   | Schema                                                                |
++---------+-----------------------------------------------------------------------+
+| R       | saleid | itemid | customerid | storeid | time | qty | pricerange |    |
+| S       | saleid | I | C | S | T | Q | P |                                      |
++---------+-----------------------------------------------------------------------+
+</code></pre>
+      </li>
+    </ul>
+    <h2 id="features" md-pos="12437-12445"><a href="#features" name="features">FEATURES</a></h2>
+    <h4 id="pretty-printer" md-pos="12452-12466"><a href="#pretty-printer" name="pretty-printer">Pretty-Printer</a></h4>
+    <ul>
+      <li md-pos="12468-12519">implemented in <code md-pos="12488-12515">src/util/PrettyPrinter.java</code></li>
+    </ul>
+    <h2 id="statistics" md-pos="12527-12537"><a href="#statistics" name="statistics">STATISTICS</a></h2>
+    <ul>
+      <li md-pos="12538-12603">line counts using: <code
+          md-pos="12562-12599">$ find . -name '*.java' | xargs wc -l</code></li>
+    </ul>
+    <pre md-pos="12603-13975"><code md-pos="12607-13971">     232 ./src/main/java/aggregation/GroupAgg.java
+     151 ./src/main/java/aggregation/Moving.java
+      85 ./src/main/java/aggregation/Aggregate.java
+      61 ./src/main/java/util/Sort.java
+     218 ./src/main/java/util/PrettyPrinter.java
+     102 ./src/main/java/util/GroupKey.java
+     159 ./src/main/java/util/Cond.java
+     142 ./src/main/java/util/Utils.java
+      35 ./src/main/java/util/SortGroupKeyMap.java
+     185 ./src/main/java/io/IO.java
+     218 ./src/main/java/io/QueryParser.java
+     186 ./src/main/java/parser/Parser.java
+      18 ./src/main/java/btree/BTKeyValue.java
+    1019 ./src/main/java/btree/BTree.java
+      11 ./src/main/java/btree/BTIteratorIF.java
+      26 ./src/main/java/btree/BTException.java
+      61 ./src/main/java/btree/BTNode.java
+      42 ./src/main/java/btree/SimpleFileWriter.java
+      58 ./src/main/java/db/DynamicTable.java
+     187 ./src/main/java/db/Table.java
+     380 ./src/main/java/db/Database.java
+      39 ./src/main/java/index/BTTestIteratorImpl.java
+      84 ./src/main/java/index/Btree.java
+      65 ./src/main/java/index/Hash.java
+      65 ./src/main/java/index/BtreeKey.java
+      71 ./src/main/java/Entry.java
+     354 ./src/main/java/algebra/Join.java
+     587 ./src/main/java/algebra/Select.java
+      55 ./src/main/java/algebra/Project.java
+      34 ./src/main/java/algebra/Concat.java
+    4930 total
+</code></pre>
+  </div>
+</body>
+
+</html>

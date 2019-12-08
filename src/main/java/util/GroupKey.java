@@ -66,18 +66,6 @@ public class GroupKey<V> implements Comparable<GroupKey>, Comparator<GroupKey>{
                 return res;
         }
         return 0;
-        /*
-        if(k1.key[0] instanceof Integer || k1.key[0] instanceof String) {
-            Integer res = Integer.parseInt(String.valueOf(k1.key[0])) - Integer.parseInt(String.valueOf(k2.getKey()[0]));
-            //return Integer.parseInt(String.valueOf(this.key[0])) - Integer.parseInt(String.valueOf(anotherKey.getKey()[0]));
-            //System.out.println(res);
-            if(res < 0)
-                return -1;
-            if(res == 0)
-                return 0;
-            return 1;
-        }
-        return String.valueOf(k1.key[0]).compareTo(String.valueOf(k2.getKey()[0]));  */
     }
 
     @Override

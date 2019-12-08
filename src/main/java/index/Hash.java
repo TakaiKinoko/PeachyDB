@@ -14,7 +14,6 @@ public class Hash {
     public Hash(Database db, String s) {
         this.db = db;
 
-        // TODO parse query and call buildHash
         // this query syntax doesn't have toTable
         String btwParens = Parser.get_conditions(s);
         String[] inside = btwParens.split(",");

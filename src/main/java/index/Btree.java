@@ -16,7 +16,6 @@ public class Btree {
     public Btree(Database db, String s) {
         this.db = db;
 
-        // TODO parse query and call buildHash
         // this query syntax doesn't have toTable
         String btwParens = Parser.get_conditions(s);
         String[] inside = btwParens.split(",");
@@ -54,7 +53,6 @@ public class Btree {
         BTTestIteratorImpl<BtreeKey, List<Integer>> iter = new BTTestIteratorImpl<>();
 
         btree_indices.put(col, index);
-
 
         // get the corresponding column number of the column indexed upon
         int col_num = target.getSchema().get(col);

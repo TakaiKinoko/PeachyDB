@@ -94,8 +94,6 @@ public class IO{
             if (path_matcher.find()) {
                 // concatenate the input path to the input file name
                 path = input_path + path_matcher.group(1);
-                //TODO: delete test println
-                //System.out.println(path);
             }else {
                 System.out.println("Illegal format of file path");
                 return false;
@@ -103,8 +101,6 @@ public class IO{
 
             if(name_matcher.find()){
                 name = name_matcher.group(1);
-                //TODO: delete the test println
-                //System.out.println(name);
             }else {
                 System.out.println("Illegal name to assign to a table");
                 return false;
@@ -134,7 +130,6 @@ public class IO{
             // LINE WILL BE THE COL-DIM OF THE RESULTING TABLE
             while (br.readLine() != null) lines++;
 
-            // TODO create new table with data set up
             db.newTable(name, col_num, lines);
             br.close();
         }catch(Exception E){
@@ -175,10 +170,8 @@ public class IO{
                 db.insertData(entry, name);
             }
 
-            // TODO delete the print
             db.getTable(name).printData();
 
-            // TODO print out database size after all has been read in
             // below line is migrated to StaticTable.printData
             //System.out.println("Number of entries inserted is: " + db.getTable(name).getTableSize());
         }catch(Exception io_e){

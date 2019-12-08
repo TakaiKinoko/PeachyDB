@@ -1,5 +1,11 @@
 # PeachyDB: a miniature relational database 
 
+* Author: Fang Han
+
+* 2019.11 
+
+* Database Systems @ NYU Courant 
+
 ## TABLE OF CONTENTS
 1. [SPECIAL INSTRUCTIONS FOR GRADERS](README.md#instructions-for-graders)
 1. [LIST OF QUERIES](README.md#QUERIES-SUPPORTED)
@@ -12,9 +18,24 @@
     1. [algebraic queries](README.md#algebraic)
     1. [aggregate queries](README.md#aggregate)
     1. [moving aggregate queries](README.md#moving-aggregates)
+    1. [index](README.md#index)
     1. [utility queries](README.md#utility)
 1. [FEATURES](README.md#FEATURES)
 1. [STATISTICS](README.md#STATISTICS)
+
+## SPECIAL INSTRUCTIONS FOR GRADERS
+
+* step 0：unzip the ```.rpz``` file
+
+* step 1: put all __input data__ files under ```input/```
+
+* step 2: put the file containin test queries under ```input/```
+
+* step 3: open ```input/input_pipe```, change the 2nd line to match the name of the query file above
+
+* step 4: at root dir, run ```./run.sh```
+
+* After the above steps, find outputs under ```output/```
 
 ## QUERIES SUPPORTED
 
@@ -36,18 +57,8 @@
 1. [avggroup](README.md#avggroup)
 1. [movavg](README.md#moving-average)
 1. [movsum](README.md#moving-sum)
-
-## instructions for graders
-
-* step 1: put all input data files and the file containing test queries under ```input/```.
-
-* step 2: add _one line_ to the __end__ of the above file: ```quit```
-
-* step 3: open ```input_pipe``` and change the second line to match the name of the above file.
-
-* step 4: at root dir, run ```./run.sh```
- 
-* After the above steps, find outputs under ```output/```
+1. [hash](README.md#hash) 
+1. [btree](README.md#btree)
 
 ## SETUP
 
@@ -189,62 +200,139 @@ $ java -cp target/peachyDB-1.0.jar Entry
 
 #### select
 
-* syntax: 
+* syntax: ```<target_table> := select(<from_table>, <condition1> [and/or <condition2>])```
+
+* the ```[and/or <condition2>]``` part is optional, which means this select operation takes one or two conditions
+
+* syntax of the condition: ```(Column | Constant) [+|-|*|/ Constant] (< | <= | > | >= | != |=) (Column | Constant) [+|-|*|/ Constant])```
+
+* within each condition, the ```[+|-|*|/ Constant]``` part is optional
+
+* implemented in ```src/algebra/Select.java```
+
 * entries selected will be deep copy from the source table
+
+* if a column within the conditions is indexed upon (by either Hash or BTree), the index will be used to perform selection
 
 #### project
 
-* syntax: 
+* syntax: ```<target_table> := project(<from_table>, <col1>, ..., <coln>)```
+
+* implemented in ```src/algebra/Project.java```
+
+* acturally fulfilled by the function ```projectTable``` in ```src/db/Database.java```
+
 * columns selected will be __shallow copy__ (pointer) of the source table 
 
 #### join
 
+* syntax: ```<target_table> := join(<table1>, <table2>, <condition1> [and/or <condition2>])```
 
-#### groupby 
+* the ```[and/or <condition2>]``` part is optional, which means this join operation takes one or two conditions
 
-internally: use treemap
-        
+* syntax of the condition: ```<table_name1>.<column_name1> ([+|-|*|/] <constant1>) [>|<|!=|=|>=|<=]  <table_name2>.<column_name2> [+|-|*|/] <constant2>```
+
+* within each condition, the ```([+|-|*|/] <constant>)``` part is optional
+
+* implemented in ```src/algebra/Join.java```
+
 #### concat
 
 * syntax: ```<target_table> := concat(<table1>, <table2>)```
 
 * implemented in ```src/algebra/Concat.java```
 
-#### join
+* acturally fulfilled by the function ```concatTables``` in ```src/db/Database.java```
 
-#### sort 
+#### sort
+
+* syntax: ```<target_table> := sort(<from_table>, <col1>, ..., <coln>)```
+
+* implemented in ```src/util/Sort.java```
 
 ### aggregate
 
 #### count 
 
+* syntax:  ```<to_table> := count(<from_table>, <column_name>)```
+
+* implemented in ```src/aggregation/Aggregate.java```
+
 #### sum 
+
+* syntax:  ```<to_table> := sum(<from_table>, <column_name>)```
+
+* implemented in ```src/aggregation/Aggregate.java```
 
 #### avg 
 
+* syntax:  ```<to_table> := avg(<from_table>, <column_name>)```
+
+* implemented in ```src/aggregation/Aggregate.java```
+
 #### countgroup 
 
-based on groupby. treemap. sorted by the first groupby condition
+* count the number of entries of a column from a table grouped on an ordered list of columns serving as grouping conditions
+
+* syntax: ```<to_table> := countgroup(<from_table>, <column_name>, <groupby_col1>, ..., <groupby_coln>)```
+
+* implemented in ```src/aggregation/GroupAgg.java```
+
+* based on internal method ```groupby``` implemented in ```src/aggregation/GroupAgg.java```
 
 #### sumgroup 
 
-based on groupby. treemap. sorted by the first groupby condition
+* compute the sum of a column from a table grouped on an ordered list of columns serving as grouping conditions
+
+* syntax: ```<to_table> := sumgroup(<from_table>, <column_name>, <groupby_col1>, ..., <groupby_coln>)```
+
+* implemented in ```src/aggregation/GroupAgg.java```
+
+* based on internal method ```groupby``` implemented in ```src/aggregation/GroupAgg.java```
     
 #### avggroup 
 
-based on groupby. treemap. sorted by the first groupby condition
+* compute the average of a column from a table grouped on an ordered list of columns serving as grouping conditions 
+
+* syntax: ```<to_table> := avggroup(<from_table>, <column_name>, <groupby_col1>, ..., <groupby_coln>)```
+
+* implemented in ```src/aggregation/GroupAgg.java```
+
+* based on internal method ```groupby``` implemented in ```src/aggregation/GroupAgg.java```
 
 ### moving aggregates
 
 #### moving average
 
+* syntax: ```<toTable> := movavg(<fromTable>, <col>, <window_len>)```
+
+* implemented in ```src/aggregation/Moving.java```
+
+* fulfilled by private internal method ```apply``` within ```src/aggregation/Moving.java```
+
 #### moving sum
 
-Based off groupby
+* syntax: ```<toTable> := movsum(<fromTable>, <col>, <window_len>)```
 
-* customized comparable class GroupKey, 
-* Java TreeMap
+* implemented in ```src/aggregation/Moving.java```
 
+* fulfilled by private internal method ```apply``` within ```src/aggregation/Moving.java```
+
+### index
+
+#### hash
+
+* syntax: ```Hash(<table>, <column>)```
+
+* implemented in ```src/index/Hash.java``` through Java's native ```HashMap``` class
+
+#### btree
+
+* syntax: ```Btree(<table>, <column>)```
+
+* implemented in ```src/index/Btree.java```
+
+* Btree implementation: ```src/btree```
 
 ### utility
 
@@ -295,52 +383,42 @@ Based off groupby
 
 ## FEATURES
 
-#### in memory
-
-#### In Order
-
 #### Pretty-Printer
+
+* implemented in ```src/util/PrettyPrinter.java```
     
 ## STATISTICS
 * line counts using: ```$ find . -name '*.java' | xargs wc -l```
 ```
-     196 ./src/main/java/aggregation/GroupAgg.java
-     139 ./src/main/java/aggregation/Moving.java
-      79 ./src/main/java/aggregation/Aggregate.java
-      90 ./src/main/java/util/Sort.java
-      96 ./src/main/java/util/PrettyPrinter.java
-     114 ./src/main/java/util/GroupKey.java
-     130 ./src/main/java/util/Utils.java
-      41 ./src/main/java/util/SortGroupKeyMap.java
-     181 ./src/main/java/io/IO.java
-     260 ./src/main/java/io/QueryParser.java
-     150 ./src/main/java/parser/Parser.java
+     232 ./src/main/java/aggregation/GroupAgg.java
+     151 ./src/main/java/aggregation/Moving.java
+      85 ./src/main/java/aggregation/Aggregate.java
+      61 ./src/main/java/util/Sort.java
+     218 ./src/main/java/util/PrettyPrinter.java
+     102 ./src/main/java/util/GroupKey.java
+     159 ./src/main/java/util/Cond.java
+     142 ./src/main/java/util/Utils.java
+      35 ./src/main/java/util/SortGroupKeyMap.java
+     185 ./src/main/java/io/IO.java
+     218 ./src/main/java/io/QueryParser.java
+     186 ./src/main/java/parser/Parser.java
       18 ./src/main/java/btree/BTKeyValue.java
-    1020 ./src/main/java/btree/BTree.java
+    1019 ./src/main/java/btree/BTree.java
       11 ./src/main/java/btree/BTIteratorIF.java
       26 ./src/main/java/btree/BTException.java
       61 ./src/main/java/btree/BTNode.java
       42 ./src/main/java/btree/SimpleFileWriter.java
-      82 ./src/main/java/db/DynamicTable.java
-     225 ./src/main/java/db/Table.java
-     401 ./src/main/java/db/Database.java
-      15 ./src/main/java/db/Variable.java
+      58 ./src/main/java/db/DynamicTable.java
+     187 ./src/main/java/db/Table.java
+     380 ./src/main/java/db/Database.java
       39 ./src/main/java/index/BTTestIteratorImpl.java
-      86 ./src/main/java/index/Btree.java
-      66 ./src/main/java/index/Hash.java
-      58 ./src/main/java/index/BtreeKey.java
-      28 ./src/main/java/Entry.java
-     288 ./src/main/java/algebra/Join.java
-     444 ./src/main/java/algebra/Select.java
-      91 ./src/main/java/algebra/CartesianArray.java
-     416 ./src/main/java/algebra/JoinOld.java
+      84 ./src/main/java/index/Btree.java
+      65 ./src/main/java/index/Hash.java
+      65 ./src/main/java/index/BtreeKey.java
+      71 ./src/main/java/Entry.java
+     354 ./src/main/java/algebra/Join.java
+     587 ./src/main/java/algebra/Select.java
       55 ./src/main/java/algebra/Project.java
       34 ./src/main/java/algebra/Concat.java
-     173 ./src/main/java/algebra/Cartesian.java
-      12 ./src/main/java/pair/IPair.java
-      44 ./src/main/java/pair/Pair.java
-    5211 total
+    4930 total
 ```
-
-#### Join
-Heap space.

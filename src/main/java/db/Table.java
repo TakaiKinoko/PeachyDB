@@ -64,17 +64,11 @@ public class Table {
          * @param cols: array of column names read from the input data file
          * @return: true if no error, false otherwise
          * */
-        //System.out.println("in Table.java setSchema!!!");
 
         try{
             for(int i = 0; i < cols.length; i++){
-                //System.out.println(cols[i]);
-                // index is zero-based, because the 0th data column is its index which was created in constructor
                 schema.put(cols[i], i);
-                // each column correspond to an arrayList
-                //data.add(new ArrayList());
             }
-            //System.out.println("SCHEMA:" + schemaToString());
             schema = Utils.sortMapByValue(schema);
             return true;
         }catch(Exception e) {
@@ -113,10 +107,8 @@ public class Table {
             String res = "";
             for (String s : schema.keySet()) {
                 if(!isDerivative)
-                    //res += schema.get(s) + ": " + s + " | ";   // index + colname
                     res += s + " | ";   // just index
                 else
-                    //res += schema.get(s) + ": " + name + "_" + s + " | "; // index + colname
                     res += name + "_" + s + " | ";  // just index
             }
             return res;
@@ -145,7 +137,6 @@ public class Table {
                 data[i][entry_num] = entry[i];
             index.put(entry_num, entry_num);
             entry_num++;
-            // TODO manage indices
             return true;
         }catch(Exception e) {
             System.out.println("Exception while inserting data into the table.");

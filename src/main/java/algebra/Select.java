@@ -14,6 +14,10 @@ public class Select {
     Database db;
 
     public Select(Database db){
+        /**
+         * Constructor
+         * @param db: database to associate the select operation with
+         * */
         this.db = db;
     }
 
@@ -34,7 +38,7 @@ public class Select {
          * */
         Table res;
 
-        //try {
+        try {
             String toTable = Parser.get_toTable(s); // toTable: new table to store the query result in
             String withinParens = Parser.get_conditions(s); // query string between the parens
             String cond = "";// cond: query conditions
@@ -47,25 +51,19 @@ public class Select {
                 if(fromTable == null)
                     System.out.println("The table " + inside[0].trim() + " doesn't exist in the database.");
                 cond = inside[1].trim();
-                //System.out.println("Select from table: "+ fromTable.name);
-                //System.out.println("Conditions: "+ cond);
             }
 
 
             // update database
             if(!cond.equals("") && !toTable.equals("") && fromTable != null) {
                 res = evaluateSelect(toTable.trim(), cond, fromTable, db);
-                //System.out.println("FINE AFTER EVALUATESELECT");
-                // add resulting table to the database
-                //db.addTable(res);
             }
 
-        //}catch(Exception e){
-            //System.out.println("Exception happened while analyzing query string.");
-        //}
+        }catch(Exception e){
+            System.out.println("Exception happened while analyzing query string.");
+        }
     }
 
-    // UPDATED
     public static Table evaluateSelect(String to_table, String cond, Table from_table, Database db) throws IOException{
         /**
          * used with "select" query, called from algebra.Select.
@@ -94,30 +92,20 @@ public class Select {
         if(Parser.is_arith_string(cond)) {
             //=================================== one condition ========================================================
             ind_selected = evaluate_arith(cond, from_schema, from_table);
-            //for(Integer i: ind_selected)
-            //System.out.println("ARITH RESULT: " + i);
         }
         else{
             //=================================== two conditions =======================================================
             String[] parts = Parser.bool_match(cond);
-            //System.out.println("BEFORE TRIMMING: " + parts[0]);
             String cond1 = parts[0].replaceAll("^\\(+", "");  // get rid of leading open parens
             cond1 = cond1.replaceAll("\\)+$", "");            // get rid of trailing close parens
-            //System.out.println("AFTER TRIMMING: " + cond1);
 
             List<Integer> left = evaluate_arith(cond1, from_schema, from_table);
-            //TODO delete test lines
             if(left.size() == 0)
                 System.out.println("\nDidn't find any matching record.");
-            //for(Integer i: left)
-            //System.out.println("res: " + i);
 
             List<Integer> right = evaluate_arith(Parser.trim_cond(parts[2]), from_schema, from_table);
-            //TODO delete test lines
             if(right.size() == 0)
                 System.out.println("\nDidn't find any matching record.");
-            //for(Integer i: right)
-            //System.out.println("res: " + i);
 
             switch (parts[1]){
                 case "and":
@@ -136,21 +124,15 @@ public class Select {
             System.out.println("\nDidn't find any matching record.");
 
 
-        // TODO set schema for new table
         String[] newcols = new String[from_schema.size()];
         int i = 0;
         for(String col: from_schema.keySet()){
             newcols[i++] = col;
         }
         db.setSchema(newcols, to_table);
-        //System.out.println("FINE AFTER SETTING SCHEMA");
-        // TODO populate the new table
         if(!db.copySubset(from_table.name, to_table, ind_selected))
             System.out.println("Error when populating the resulting table.");
-        // TODO print out new table
-        //System.out.println("FINE AFTER POPULATING NEW TABLE");
 
-        //System.out.println("Size:" + res.getTableSize());
         res.printData();
         return res;
     }
@@ -159,50 +141,27 @@ public class Select {
         /**
          * In case of AND, just take the intersection of two lists without duplicate
          *
-         * @param left:
-         * @param right:
          * */
         List<Integer> res = new ArrayList<>();
 
-        // TODO delete
-        //System.out.println("\nevaluating AND");
         for(Integer i: left){
             if(right.contains(i)) {
                 res.add(i);
-                //System.out.println("added: " + i);
             }
-            /*
-            if(!right.contains(i))
-                left.remove(i);*/
         }
 
-            /*
-            for(Integer i: res)
-                System.out.println("Intersection product: " + i);
-            */
         return res;
     }
 
     public static List<Integer> merge_lists(List<Integer> left, List<Integer> right){
         /**
          * In case of OR, just merge two lists without duplicate
-         *
-         * @param left:
-         * @param right:
+
          * */
-        // TODO delete
-        //System.out.println("evaluating OR");
-        // remove duplicate
         left.removeAll(right);
-        // merge two lists
         left.addAll(right);
-        // sort
         Collections.sort(left);
 
-            /*
-            for(Integer i: left)
-                System.out.println("Merging product: " + i);
-            */
         return left;
     }
 
@@ -226,68 +185,43 @@ public class Select {
         }
         return val;
     }
-    // UPDATED
+
     public static List<Integer> evaluate_arith(String s, Map<String, Integer> schema, Table table) throws IOException {
         /**
          * @return the indices of the entries selected
          * */
         List<Integer> res = new ArrayList<>();
-        //String[] qs = Parser.arith_match(s);
         Cond[] conds = Parser.arith_match(s);
         Cond column;
         Cond constraint;
         String[] col;
-        //String constraint;
         boolean reverse;
 
-        // TODO delete
-        //System.out.println("\nEvaluating arithmetic expression without index.");
-        //System.out.println(qs[0]);
-        //System.out.println(qs[1]);
-        //System.out.println(qs[2]);
-        //for(String k: schema.keySet())
-        //    System.out.println(k);
-        //if (schema.keySet().contains(qs[0])) {
         if(conds[0].type == Parser.Type.COLUMN || conds[0].type == Parser.Type.COLUMNOP){
             column = conds[0];
-            //col = table.getData()[schema.get(qs[0])];   // column is on the left of the operator
             col = table.getData()[schema.get(column.col)];
-            //constraint = qs[2];
             constraint = conds[2];
 
-            //System.out.println("CONSTRAINT: " + constraint.toString());
             reverse = false;
         }
         else {
             column = conds[2];
             col = table.getData()[schema.get(column.col)];
-            //col = table.getData()[schema.get(qs[2])];   // column is on the right of the operator
-            //constraint = qs[0];
             constraint = conds[0];
-            //System.out.println("CONSTRAINT: " + constraint.toString());
             reverse = true;
         }
 
-        //TODO GET THESE INDICES TO WORK
-
-        // if previously have built a hash index on this column:
-        //if(table.hash_indices != null && table.hash_indices.get(qs[0].trim()) != null){
         if(table.hash_indices != null && table.hash_indices.get(column.col) != null){
             System.out.println("Column " + column.col + " has been hash indexed.");
-            //return select_from_hash(col, constraint, qs[1], reverse, table);
             return select_from_hash(column, constraint, conds[1], reverse, table);
         }
 
-        // if previously have built a btree index on this column:
-        //if(table.btree_indices != null && table.btree_indices.get(qs[0].trim()) != null){
         if(table.btree_indices != null && table.btree_indices.get(column.col) != null){
             System.out.println("Column " + column.col + " has been btree indexed.");
-            //return select_from_btree(qs[0], constraint, qs[1], reverse, table);
             return select_from_btree(column, constraint, conds[1], reverse, table);
         }
 
         switch(conds[1].op){
-            //case ">":
             case MORE:
                 try {
                     for (int i = 0; i < col.length; i++) {
@@ -369,13 +303,10 @@ public class Select {
                 }
                 break;
             case EQUAL:
-                //System.out.println("equallll");
                 boolean numerical = Utils.isNumeric(col[0]);
-                try {  // TODO
+                try {
                     for (int i = 0; i < col.length; i++) {
                         if (column.type == Parser.Type.COLUMN) {
-                            //System.out.println(col[i] + " v.s. " + constraint.constant);
-                            // String column:
                             if (!numerical && col[i].equals(constraint.constant))
                                 res.add(i);
                             // Numerical column:
@@ -383,7 +314,6 @@ public class Select {
                                 res.add(i);
                         } else if (column.type == Parser.Type.COLUMNOP) {
                             Double val = getColValue(column, col, i);
-                            //System.out.println(val + " v.s. " + constraint.constant);
                             if (!numerical && String.valueOf(val).equals(constraint.constant))
                                 res.add(i);
                             else if(numerical && val - Double.valueOf(constraint.constant) == 0)
@@ -422,7 +352,6 @@ public class Select {
         return res;
     }
 
-    //private static List<Integer> select_from_hash(String col, String constraint, String op,  Boolean reverse, Table table){
     private static List<Integer> select_from_hash(Cond col, Cond constraint, Cond op,  Boolean reverse, Table table){
         System.out.println("Using hash index"); // TODO delete
         HashMap<String, List<Integer>> index;
@@ -555,8 +484,6 @@ public class Select {
         }
     }
 
-    //private static List<Integer> select_from_btree
-    //        (String col, String constraint, String op,  Boolean reverse, Table table) throws IOException {
     private static List<Integer> select_from_btree
             (Cond col, Cond constraint, Cond op,  Boolean reverse, Table table) throws IOException {
         BTree<BtreeKey, List<Integer>> index;
@@ -571,8 +498,6 @@ public class Select {
         List<Integer> res = new ArrayList<>();
         BTTestIteratorImpl<BtreeKey, List<Integer>> iter = new BTTestIteratorImpl<>();
         List<BtreeKey> keySet = index.getKeySet(iter);
-        //BtreeKey constr = new BtreeKey(constraint);
-        //BtreeKey constr = adjustConstraint(col, constraint);
         BtreeKey constr;
         if(col.type == Parser.Type.COLUMN)
             constr = new BtreeKey(constraint.constant);
@@ -657,8 +582,6 @@ public class Select {
                 break;
         }
 
-        //System.out.println("OLD CONSTRAINT " + orig_constr);
-        //System.out.println("NEW CONSTRAINT " + new_constr);
         return new_constr;
     }
 }

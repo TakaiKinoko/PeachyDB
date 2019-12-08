@@ -35,14 +35,17 @@ public class Join {
     private Table[] fromTables;
     private DynamicTable target;
     private String conditions;
-    private long START;
 
     private enum Op{
         NOT_EQUAL, MORE_THAN, LESS_THAN, LESS_OR_EQUAL, MORE_OR_EQUAL, EQUAL, AND, OR;
     }
 
     public Join(Database db, String s){
-        START = System.currentTimeMillis();
+        /**
+         * constructor
+         * @param s: query string
+         * @param db: database to perform the join operation on
+         * */
         this.db = db;
         try {
             String toTable = Parser.get_toTable(s);
@@ -68,23 +71,27 @@ public class Join {
     }
 
     public void join(){
+        /**
+         * main entry for the join operation
+         * */
         Conditions COND = new Conditions(conditions, fromTables);
         COND.evaluate(target);
-        //System.out.printf("\nTime cost: %.4f seconds\n\n", ((double)System.currentTimeMillis() - (double)START)/1000);
 
-        // TODO COPY dynamic table to tables!!!!!
         target.makeStatic(db);
         db.getTable(target.name).printData(); // print static table
     }
 
     class Conditions {
+        /**
+         * private utility class that gets passed in to each pair of data from the tables and perform boolean operation
+         * */
         Table table1;
         Table table2;
 
         Map<Table, Integer> col_map1; // map tables to the selected column in the first join condition
         Op arith1;
         Boolean reverse1;             // indicate if the tables to the left and right of the operand is in reverse order as table1 and 2
-        // ADDED
+
         Map<Table, Parser.ArithOp> arith_map1;  // in case the syntax is [table1].[column1] [+|-|*|\] [table2].[column2]
         Map<Table, String> constant_map1;
 
@@ -93,7 +100,7 @@ public class Join {
         Map<Table, Integer> col_map2; // null if there's only one condition
         Op arith2;   // null if only one condition
         Boolean reverse2;
-        // ADDED
+
         Map<Table, Parser.ArithOp> arith_map2;
         Map<Table, String> constant_map2;
 
@@ -111,24 +118,12 @@ public class Join {
                 //===================================
                 // ONLY JOIN CONDITION
                 //===================================
-                /*String[] parts = Parser.arith_match(conditions);
-                this.col_map1 = parseCond(parts);
-                this.arith1 = getArithOperator(parts, reverse1);
-                this.twoConds = false;*/
                 Cond[] parts = Parser.arith_match(conditions);
                 this.arith_map1 = new HashMap<>();
                 this.constant_map1 = new HashMap<>();
                 this.col_map1 = parseCond(parts, arith_map1, constant_map1);
                 this.arith1 = getArithOperator(parts, reverse1);
                 this.twoConds = false;
-
-                /*
-                System.out.println("~~~~~~~~~~~~~~~~");
-                System.out.println(col_map1);
-                System.out.println(arith_map1);
-                System.out.println(constant_map1);
-                System.out.println("~~~~~~~~~~~~~~~~");
-*/
 
             }else{
                 //===================================
@@ -153,16 +148,8 @@ public class Join {
 
         }
 
-        //Map<Table, Integer> parseCond(String[] parts){
         Map<Table, Integer> parseCond(Cond[] parts, Map<Table, Parser.ArithOp> arith_map, Map<Table, String> constant_map){
-            // {<left_operand>, <operator>, <right_operand>}
             assert parts.length == 3;
-
-            /*
-            String[] leftOperand = Parser.decomposeOperand(parts[0]);
-            String[] rightOperand = Parser.decomposeOperand(parts[2]);
-            String t1name = leftOperand[0];// table name of the left operand
-            String t2name = rightOperand[0]; // table name of the right operand  */
 
             String[] leftOperand = Parser.decomposeOperandFromCond(parts[0]);
             String[] rightOperand = Parser.decomposeOperandFromCond(parts[2]);
@@ -199,34 +186,25 @@ public class Join {
             return colMap;
         }
 
-        //Op getArithOperator(String[] parts, Boolean reverse){
         Op getArithOperator(Cond[] parts, Boolean reverse){
             /**
              * passing in reverse flag will make sure that the order tables in the conditions is aligned with the resulting table
              * */
             assert parts.length == 3 && reverse != null;
 
-            /*
-            String operator = parts[1].trim();  // operator */
             Parser.ArithOp operator = parts[1].op;
 
             switch(operator){
-                //case "=":
                 case EQUAL:
                     return Op.EQUAL;
-                    // case "!=":
                 case NOT_EQUAL:
                     return Op.NOT_EQUAL;
-                //case "<":
                 case LESS:
                     return reverse? Op.MORE_THAN : Op.LESS_THAN;
-                //case "<=":
                 case LESS_OR_EQUAL:
                     return reverse? Op.MORE_OR_EQUAL : Op.LESS_OR_EQUAL;
-                //case ">":
                 case MORE:
                     return reverse? Op.LESS_THAN : Op.MORE_THAN;
-                //case ">=":
                 case MORE_OR_EQUAL:
                     return reverse? Op.MORE_OR_EQUAL : Op.MORE_OR_EQUAL;
                 default:
@@ -236,7 +214,9 @@ public class Join {
         }
 
         Op getBoolOp(String[] conds){
-            // the array passed in should be of the format: {<condition1>, <boolean_operator>, <condition2>}
+            /**
+             * @param conds: should be of the format: {<condition1>, <boolean_operator>, <condition2>}
+             * */
             assert conds.length == 3;
 
             switch(conds[1].trim()){
@@ -295,8 +275,6 @@ public class Join {
                 }
             }
 
-            // TODO delete the below non-pretty printer from dynamic table
-            //target.printTable();
         }
 
         void addData(String[][] data1, String[][] data2, int colnum_1, int colnum_2, int i, int j, DynamicTable target){
@@ -327,7 +305,6 @@ public class Join {
             String orig1 = data1[col1][i];
             String orig2 = data2[col2][j];
 
-            // TODO use a method to adjust the value to be compared based on the arithop inside each cond
             String val1 = arith_map.get(table1) == null? orig1: adjustValue(arith_map, constant_map, orig1, table1);
 
             String val2 = arith_map.get(table2) == null? orig2: adjustValue(arith_map, constant_map, orig2, table2);
@@ -338,24 +315,18 @@ public class Join {
                     if(numerical)
                         return Double.valueOf(val1) - Double.valueOf(val2) == 0.0;
                     return val1.equals(val2);
-                    //return data1[col1][i].equals(data2[col2][j]);
                 case NOT_EQUAL:
                     if(numerical)
                         return Double.valueOf(val1) - Double.valueOf(val2) != 0.0;
                     return !val1.equals(val2);
-                    //return !data1[col1][i].equals(data2[col2][j]);
                 case LESS_THAN:
                     return Double.valueOf(val1) < Double.valueOf(val2);
-                    //return Double.valueOf(data1[col1][i]) < Double.valueOf(data2[col2][j]);
                 case LESS_OR_EQUAL:
                     return Double.valueOf(val1) <= Double.valueOf(val2);
-                    //return Double.valueOf(data1[col1][i]) <= Double.valueOf(data2[col2][j]);
                 case MORE_THAN:
                     return Double.valueOf(val1) > Double.valueOf(val2);
-                    //return Double.valueOf(data1[col1][i]) > Double.valueOf(data2[col2][j]);
                 case MORE_OR_EQUAL:
                     return Double.valueOf(val1) >= Double.valueOf(val2);
-                    //return Double.valueOf(data1[col1][i]) >= Double.valueOf(data2[col2][j]);
                 default:
                     return false;
             }

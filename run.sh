@@ -12,5 +12,3 @@ echo ---------------------------------------------------------------------------
 java -cp target/peachyDB-1.0.jar Entry  < input/input_pipe > output/fh643_AllOperations
 
 
-
-
